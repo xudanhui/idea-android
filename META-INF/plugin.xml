@@ -1,13 +1,16 @@
 <!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
 <idea-plugin>
   <name>Android Support</name>
-  <description>Supports development of Open Handset Allianc Android applications with IntelliJ IDEA</description>
+  <description>Supports development of Open Handset Alliance Android applications with IntelliJ IDEA</description>
   <version>1.0</version>
-  <vendor>JetBrains</vendor>
+  <vendor logo="/icons/android.png">JetBrains</vendor>
   <idea-version since-build="7361"/>
     <application-components>
         <component>
             <implementation-class>org.jetbrains.android.AndroidManager</implementation-class>
+        </component>
+        <component>
+            <implementation-class>org.jetbrains.android.run.AndroidRunConfigurationType</implementation-class>
         </component>
     </application-components>
 </idea-plugin>
