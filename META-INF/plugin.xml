@@ -1,10 +1,10 @@
 <!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
 <idea-plugin>
-  <name>Android Support</name>
-  <description>Supports development of Open Handset Alliance Android applications with IntelliJ IDEA</description>
-  <version>1.0</version>
-  <vendor logo="/icons/android.png">JetBrains</vendor>
-  <idea-version since-build="7361"/>
+    <name>Android Support</name>
+    <description>Supports development of Open Handset Alliance Android applications with IntelliJ IDEA</description>
+    <version>1.0</version>
+    <vendor logo="/icons/android.png">JetBrains</vendor>
+    <idea-version since-build="7361"/>
     <application-components>
         <component>
             <implementation-class>org.jetbrains.android.AndroidManager</implementation-class>
@@ -13,7 +13,12 @@
             <implementation-class>org.jetbrains.android.run.AndroidRunConfigurationType</implementation-class>
         </component>
     </application-components>
+    <project-components>
+        <component>
+            <implementation-class>org.jetbrains.android.compiler.AndroidAptCompiler</implementation-class>
+        </component>
+    </project-components>
     <extensions xmlns="com.intellij">
-         <dom.fileDescription implementation="org.jetbrains.android.dom.manifest.ManifestDomFileDescription"/>
+        <dom.fileDescription implementation="org.jetbrains.android.dom.manifest.ManifestDomFileDescription"/>
     </extensions>
 </idea-plugin>
