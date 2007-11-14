@@ -6,4 +6,6 @@ import com.intellij.util.xml.DomElement;
  * @author yole
  */
 public interface IntentFilter extends DomElement {
+    Action getAction();
+    Category getCategory();
 }

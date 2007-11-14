@@ -14,6 +14,10 @@ public class ManifestDomFileDescription extends DomFileDescription<Manifest> {
         super(Manifest.class, "manifest");
     }
 
+    protected void initializeFileDescription() {
+        registerNamespacePolicy("android", "http://schemas.android.com/apk/res/android");
+    }
+
     public boolean isMyFile(@NotNull XmlFile file, @Nullable Module module) {
         return file.getName().equals("AndroidManifest.xml");
     }
