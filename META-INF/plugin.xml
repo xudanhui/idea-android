@@ -13,4 +13,7 @@
             <implementation-class>org.jetbrains.android.run.AndroidRunConfigurationType</implementation-class>
         </component>
     </application-components>
+    <extensions xmlns="com.intellij">
+         <dom.fileDescription implementation="org.jetbrains.android.dom.manifest.ManifestDomFileDescription"/>
+    </extensions>
 </idea-plugin>
