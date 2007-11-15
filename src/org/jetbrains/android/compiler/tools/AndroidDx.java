@@ -28,7 +28,7 @@ public final class AndroidDx {
                 sdkPath + File.separator + "tools" + File.separator + TOOL,
                 SystemInfo.isWindows ? "" : "-JXmx384M",
                 "--dex",
-                "--output=" + ExternalCompilerTool.quote(classesDir + File.separatorChar + "classes.dex"),
+                "--output=" + classesDir + File.separatorChar + "classes.dex",
                 "--locals=full",
                 "--positions=lines",
                 classesDir
