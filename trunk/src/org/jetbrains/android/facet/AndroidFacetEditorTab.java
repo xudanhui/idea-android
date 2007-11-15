@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.ide.util.PropertiesComponent;
 import org.jetbrains.annotations.Nls;
 
 import javax.swing.*;
@@ -39,6 +40,8 @@ public class AndroidFacetEditorTab extends FacetEditorTab {
 
     public void apply() throws ConfigurationException {
         myConfiguration.SDK_PATH = mySdkPathField.getText();
+        PropertiesComponent.getInstance().setValue(AndroidFacetConfiguration.DEFAULT_SDK_PATH_PROPERTY,
+                myConfiguration.SDK_PATH);
     }
 
     public void reset() {
