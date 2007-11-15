@@ -5,6 +5,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.openapi.module.Module;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.android.AndroidManager;
 
 /**
  * @author yole
@@ -19,6 +20,6 @@ public class ManifestDomFileDescription extends DomFileDescription<Manifest> {
     }
 
     public boolean isMyFile(@NotNull XmlFile file, @Nullable Module module) {
-        return file.getName().equals("AndroidManifest.xml");
+        return file.getName().equals(AndroidManager.MANIFEST_FILE_NAME);
     }
 }
