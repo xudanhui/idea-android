@@ -17,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -127,7 +126,6 @@ public class AndroidDexCompiler implements ClassPostProcessingCompiler, ProjectC
                     try {
                         Map<CompilerMessageCategory, List<String>> messages = AndroidDx.dex(
                                 dexItem.getSdkPath(),
-                                dexItem.getOutputFilePath(),
                                 dexItem.getFile().getPath()
                         );
                         addMessages(messages);
@@ -156,13 +154,11 @@ public class AndroidDexCompiler implements ClassPostProcessingCompiler, ProjectC
         private final Module myModule;
         private final VirtualFile myOutputPath;
         private final String mySdkPath;
-        private final String myOutputFilePath;
 
         public DexItem(Module module, VirtualFile outputPath, String sdkPath) {
             myModule = module;
             myOutputPath = outputPath;
             mySdkPath = sdkPath;
-            myOutputFilePath = outputPath.getPath() + File.separator + module.getName() + ".dex";
         }
 
         @NotNull
@@ -173,10 +169,6 @@ public class AndroidDexCompiler implements ClassPostProcessingCompiler, ProjectC
         @Nullable
         public ValidityState getValidityState() {
             return null;
-        }
-
-        public String getOutputFilePath() {
-            return myOutputFilePath;
         }
 
         public String getSdkPath() {
