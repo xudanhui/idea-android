@@ -77,10 +77,12 @@ public final class ExternalCompilerTool {
     protected static String formatCommand(String... argv) {
         StringBuilder command = new StringBuilder(SystemInfo.isWindows ? SystemInfo.isWindows9x ? COMMAND_COM : CMD_EXE : "");
         for (String arg : argv) {
-            if (command.length() > 0) {
-                command.append(' ');
+            if (StringUtil.isNotEmpty(arg)) {
+                if (command.length() > 0) {
+                    command.append(' ');
+                }
+                command.append(quote(arg));
             }
-            command.append(quote(arg));
         }
         return command.toString();
     }
