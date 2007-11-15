@@ -80,15 +80,16 @@ public final class ExternalCompilerTool {
             if (command.length() > 0) {
                 command.append(' ');
             }
-            if (arg.indexOf(' ') != -1) {
-                command.append('\"');
-                command.append(arg);
-                command.append('\"');
-            } else {
-                command.append(arg);
-            }
+            command.append(quote(arg));
         }
         return command.toString();
+    }
+
+    public static String quote(String arg) {
+        if (arg.indexOf(' ') != -1) {
+            arg = String.format("\"%s\"", arg);
+        }
+        return arg;
     }
 
     private static void filter(@NonNls String output, @NotNull List<String> buffer) {
