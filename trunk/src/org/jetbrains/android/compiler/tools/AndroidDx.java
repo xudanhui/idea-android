@@ -1,6 +1,7 @@
 package org.jetbrains.android.compiler.tools;
 
 import com.intellij.openapi.compiler.CompilerMessageCategory;
+import com.intellij.openapi.util.SystemInfo;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +26,7 @@ public final class AndroidDx {
     public static Map<CompilerMessageCategory, List<String>> dex(String sdkPath, String classesDir) throws IOException {
         return ExternalCompilerTool.execute(
                 sdkPath + File.separator + "tools" + File.separator + TOOL,
-                "-JXmx384M",
+                SystemInfo.isWindows ? "" : "-JXmx384M",
                 "--dex",
                 "--output=" + ExternalCompilerTool.quote(classesDir + File.separatorChar + "classes.dex"),
                 "--locals=full",
