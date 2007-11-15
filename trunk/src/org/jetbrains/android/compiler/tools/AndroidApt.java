@@ -10,15 +10,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Apt decorator.
+ * AndroidApt decorator.
  *
  * @author Alexey Efimov
  */
-public final class Apt {
+public final class AndroidApt {
     @NonNls
     public static final String TOOL = "aapt";
 
-    private Apt() {
+    private AndroidApt() {
     }
 
     @NotNull
