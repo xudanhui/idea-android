@@ -100,7 +100,7 @@ public class AndroidIdlCompiler implements SourceGeneratingCompiler, ProjectComp
         myCompilerManager.removeCompilableFileType(StdFileTypes.XML);
     }
 
-    private final class IdlGenerationItem implements GenerationItem {
+    private final static class IdlGenerationItem implements GenerationItem {
         private final Module myModule;
         private final VirtualFile myFile;
         private final boolean myTestSource;
@@ -179,7 +179,7 @@ public class AndroidIdlCompiler implements SourceGeneratingCompiler, ProjectComp
         }
     }
 
-    private static class GenerateAction implements Computable<GenerationItem[]> {
+    private static final class GenerateAction implements Computable<GenerationItem[]> {
         private final CompileContext myContext;
         private final GenerationItem[] myItems;
 

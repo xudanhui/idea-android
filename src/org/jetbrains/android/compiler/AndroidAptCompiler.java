@@ -104,7 +104,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         myCompilerManager.removeCompilableFileType(StdFileTypes.XML);
     }
 
-    private final class AptGenerationItem implements GenerationItem {
+    private final static class AptGenerationItem implements GenerationItem {
         private final Module myModule;
         private final String myRootPath;
         private final String myResourcesPath;
@@ -203,7 +203,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         }
     }
 
-    private static class GenerateAction implements Computable<GenerationItem[]> {
+    private static final class GenerateAction implements Computable<GenerationItem[]> {
         private final CompileContext myContext;
         private final GenerationItem[] myItems;
 
