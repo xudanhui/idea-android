@@ -22,13 +22,14 @@ public final class AndroidDx {
     }
 
     @NotNull
-    public static Map<CompilerMessageCategory, List<String>> dex(String sdkPath, String outputFilePath, String classesDir) throws IOException {
+    public static Map<CompilerMessageCategory, List<String>> dex(String sdkPath, String classesDir) throws IOException {
         return ExternalCompilerTool.execute(
                 sdkPath + File.separator + "tools" + File.separator + TOOL,
                 "-JXmx384M",
                 "--dex",
-                "--output=" + ExternalCompilerTool.quote(outputFilePath),
+                "--output=" + ExternalCompilerTool.quote(classesDir + File.separatorChar + "classes.dex"),
                 "--locals=full",
+                "--positions=lines",
                 classesDir
         );
     }
