@@ -9,18 +9,14 @@ import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ProjectFileIndex;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.xml.XmlFile;
-import com.intellij.util.xml.DomFileElement;
-import com.intellij.util.xml.DomManager;
-import org.jetbrains.android.compiler.tools.AndroidApt;
-import org.jetbrains.android.dom.manifest.Manifest;
+import org.jetbrains.android.compiler.tools.AndroidIdl;
 import org.jetbrains.android.facet.AndroidFacet;
-import org.jetbrains.android.facet.AndroidFacetConfiguration;
+import org.jetbrains.android.fileTypes.AndroidIdlFileType;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,17 +28,17 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Apt compiler.
+ * Android IDL compiler.
  *
  * @author Alexey Efimov
  */
-public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComponent {
+public class AndroidIdlCompiler implements SourceGeneratingCompiler, ProjectComponent {
     private static final GenerationItem[] EMPTY_GENERATION_ITEM_ARRAY = {};
 
     private final Project myProject;
     private final CompilerManager myCompilerManager;
 
-    public AndroidAptCompiler(Project project, CompilerManager compilerManager) {
+    public AndroidIdlCompiler(Project project, CompilerManager compilerManager) {
         myProject = project;
         myCompilerManager = compilerManager;
     }
@@ -61,7 +57,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
             Application application = ApplicationManager.getApplication();
             GenerationItem[] generationItems = application.runReadAction(new GenerateAction(context, items));
             for (GenerationItem item : generationItems) {
-                File generatedFile = ((AptGenerationItem) item).getGeneratedFile();
+                File generatedFile = ((IdlGenerationItem) item).getGeneratedFile();
                 if (generatedFile != null) {
                     CompilerUtil.refreshIOFile(generatedFile);
                 }
@@ -73,7 +69,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
 
     @NotNull
     public String getDescription() {
-        return AndroidApt.TOOL;
+        return AndroidIdl.TOOL;
     }
 
     public boolean validateConfiguration(CompileScope scope) {
@@ -93,7 +89,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
     @NonNls
     @NotNull
     public String getComponentName() {
-        return "AndroidAptCompiler";
+        return "AndroidIdlCompiler";
     }
 
     public void initComponent() {
@@ -104,33 +100,23 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         myCompilerManager.removeCompilableFileType(StdFileTypes.XML);
     }
 
-    private final class AptGenerationItem implements GenerationItem {
+    private final class IdlGenerationItem implements GenerationItem {
         private final Module myModule;
-        private final String myRootPath;
-        private final String myResourcesPath;
-        private final String mySourceRootPath;
+        private final VirtualFile myFile;
+        private final boolean myTestSource;
         private final String mySdkPath;
         private final File myGeneratedFile;
 
-        private AptGenerationItem(Module module, String rootPath, String resourcesPath, String sourceRootPath, String sdkPath, String packageValue) {
+        public IdlGenerationItem(Module module, VirtualFile file, boolean testSource, String sdkPath) {
             myModule = module;
-            myRootPath = rootPath;
-            myResourcesPath = resourcesPath;
-            mySourceRootPath = sourceRootPath;
+            myFile = file;
+            myTestSource = testSource;
             mySdkPath = sdkPath;
-            myGeneratedFile = new File(sourceRootPath, packageValue.replace('.', File.separatorChar) + File.separatorChar + "R.java");
+            myGeneratedFile = new File(VfsUtil.virtualToIoFile(file.getParent()), file.getNameWithoutExtension() + ".java");
         }
 
-        public String getRootPath() {
-            return myRootPath;
-        }
-
-        public String getSourceRootPath() {
-            return mySourceRootPath;
-        }
-
-        public String getResourcesPath() {
-            return myResourcesPath;
+        public VirtualFile getFile() {
+            return myFile;
         }
 
         public String getPath() {
@@ -146,7 +132,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         }
 
         public boolean isTestSource() {
-            return false;
+            return myTestSource;
         }
 
         public String getSdkPath() {
@@ -166,40 +152,30 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         }
 
         public GenerationItem[] compute() {
+            ProjectFileIndex fileIndex = ProjectRootManager.getInstance(myProject).getFileIndex();
             CompileScope compileScope = myContext.getCompileScope();
-            PsiManager psiManager = PsiManager.getInstance(myProject);
-            DomManager domManager = DomManager.getDomManager(myProject);
-            Module[] modules = compileScope.getAffectedModules();
-            List<GenerationItem> items = new ArrayList<GenerationItem>();
-            for (Module module : modules) {
-                AndroidFacet facet = FacetManager.getInstance(module).getFacetByType(AndroidFacet.ID);
-                if (facet != null) {
-                    ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-                    VirtualFile[] sourceRoots = rootManager.getSourceRoots();
-                    VirtualFile[] roots = rootManager.getContentRoots();
-                    AndroidFacetConfiguration configuration = facet.getConfiguration();
-                    for (VirtualFile root : roots) {
-                        VirtualFile manifestFile = root.findChild("AndroidManifest.xml");
-                        if (manifestFile != null) {
-                            PsiFile manifestPsiFile = psiManager.findFile(manifestFile);
-                            if (manifestPsiFile instanceof XmlFile) {
-                                XmlFile manifestXmlFile = (XmlFile) manifestPsiFile;
-                                DomFileElement<Manifest> manifest = domManager.getFileElement(manifestXmlFile, Manifest.class);
-                                if (manifest != null) {
-                                    Manifest rootElement = manifest.getRootElement();
-                                    VirtualFile res = root.findChild(configuration.RESOURCES_PATH);
-                                    if (res != null && res.isDirectory()) {
-                                        for (VirtualFile sourceRoot : sourceRoots) {
-                                            items.add(new AptGenerationItem(module, root.getPath(), res.getPath(), sourceRoot.getPath(), configuration.SDK_PATH, rootElement.getPackage().getValue()));
-                                        }
-                                    }
-                                }
+            VirtualFile[] files = compileScope.getFiles(AndroidIdlFileType.ourFileType, false);
+            if (files != null) {
+                List<GenerationItem> items = new ArrayList<GenerationItem>(files.length);
+                for (VirtualFile file : files) {
+                    Module module = myContext.getModuleByFile(file);
+                    AndroidFacet facet = FacetManager.getInstance(module).getFacetByType(AndroidFacet.ID);
+                    if (facet != null) {
+                        String sdkPath = facet.getConfiguration().SDK_PATH;
+                        IdlGenerationItem generationItem = new IdlGenerationItem(module, file, fileIndex.isInTestSourceContent(file), sdkPath);
+                        if (myContext.isMake()) {
+                            File generatedFile = generationItem.getGeneratedFile();
+                            if (generatedFile == null || !generatedFile.exists() || generatedFile.lastModified() <= file.getModificationStamp()) {
+                                items.add(generationItem);
                             }
+                        } else {
+                            items.add(generationItem);
                         }
                     }
                 }
+                return items.toArray(new GenerationItem[items.size()]);
             }
-            return items.toArray(new GenerationItem[items.size()]);
+            return EMPTY_GENERATION_ITEM_ARRAY;
         }
     }
 
@@ -215,32 +191,30 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         public GenerationItem[] compute() {
             List<GenerationItem> results = new ArrayList<GenerationItem>(myItems.length);
             for (GenerationItem item : myItems) {
-                if (item instanceof AptGenerationItem) {
-                    AptGenerationItem aptItem = (AptGenerationItem) item;
+                if (item instanceof IdlGenerationItem) {
+                    IdlGenerationItem idlItem = (IdlGenerationItem) item;
                     try {
-                        Map<CompilerMessageCategory, List<String>> messages = AndroidApt.compile(
-                                aptItem.getRootPath(),
-                                aptItem.getSourceRootPath(),
-                                aptItem.getResourcesPath(),
-                                aptItem.getSdkPath()
+                        Map<CompilerMessageCategory, List<String>> messages = AndroidIdl.execute(
+                                idlItem.getSdkPath(),
+                                idlItem.getFile().getPath()
                         );
-                        addMessages(messages);
+                        addMessages(messages, idlItem.getFile().getUrl());
                         if (messages.get(CompilerMessageCategory.ERROR).isEmpty()) {
-                            results.add(aptItem);
+                            results.add(idlItem);
                         }
                     } catch (IOException e) {
-                        myContext.addMessage(CompilerMessageCategory.ERROR, e.getMessage(), null, -1, -1);
+                        myContext.addMessage(CompilerMessageCategory.ERROR, e.getMessage(), idlItem.getFile().getUrl(), -1, -1);
                     }
                 }
             }
             return results.toArray(new GenerationItem[results.size()]);
         }
 
-        private void addMessages(Map<CompilerMessageCategory, List<String>> messages) {
+        private void addMessages(Map<CompilerMessageCategory, List<String>> messages, String url) {
             for (CompilerMessageCategory category : messages.keySet()) {
                 List<String> messageList = messages.get(category);
                 for (String message : messageList) {
-                    myContext.addMessage(category, message, null, -1, -1);
+                    myContext.addMessage(category, message, url, -1, -1);
                 }
             }
         }
