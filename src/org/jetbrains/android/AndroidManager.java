@@ -14,6 +14,8 @@ import org.jetbrains.annotations.NotNull;
  * @author yole
  */
 public class AndroidManager implements ApplicationComponent, InspectionToolProvider {
+    public static final String MANIFEST_FILE_NAME = "AndroidManifest.xml";
+
     @NonNls
     @NotNull
     public String getComponentName() {

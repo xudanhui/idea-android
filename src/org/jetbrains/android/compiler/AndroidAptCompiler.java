@@ -21,6 +21,7 @@ import org.jetbrains.android.compiler.tools.AndroidApt;
 import org.jetbrains.android.dom.manifest.Manifest;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.facet.AndroidFacetConfiguration;
+import org.jetbrains.android.AndroidManager;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -179,7 +180,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
                     VirtualFile[] roots = rootManager.getContentRoots();
                     AndroidFacetConfiguration configuration = facet.getConfiguration();
                     for (VirtualFile root : roots) {
-                        VirtualFile manifestFile = root.findChild("AndroidManifest.xml");
+                        VirtualFile manifestFile = root.findChild(AndroidManager.MANIFEST_FILE_NAME);
                         if (manifestFile != null) {
                             PsiFile manifestPsiFile = psiManager.findFile(manifestFile);
                             if (manifestPsiFile instanceof XmlFile) {

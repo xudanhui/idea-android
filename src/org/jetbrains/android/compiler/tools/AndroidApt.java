@@ -3,6 +3,7 @@ package org.jetbrains.android.compiler.tools;
 import com.intellij.openapi.compiler.CompilerMessageCategory;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.android.AndroidManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +31,7 @@ public final class AndroidApt {
                 "-J",
                 outDir,
                 "-M",
-                rootDirPath + File.separator + "AndroidManifest.xml",
+                rootDirPath + File.separator + AndroidManager.MANIFEST_FILE_NAME,
                 "-S", resourceDir,
                 "-I", sdkPath + File.separator + "android.jar"
         );
