@@ -13,6 +13,8 @@ import org.jdom.Element;
  * @author yole
  */
 public class AndroidFacetConfiguration implements FacetConfiguration {
+    public static final String DEFAULT_SDK_PATH_PROPERTY = "AndroidSdkPath";
+
     public String SDK_PATH;
     public String RESOURCES_PATH = "res";
 

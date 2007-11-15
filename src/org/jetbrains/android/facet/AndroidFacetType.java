@@ -9,6 +9,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileFilter;
+import com.intellij.ide.util.PropertiesComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.android.AndroidManager;
@@ -25,7 +26,11 @@ public class AndroidFacetType extends FacetType<AndroidFacet, AndroidFacetConfig
     }
 
     public AndroidFacetConfiguration createDefaultConfiguration() {
-        return new AndroidFacetConfiguration();
+        AndroidFacetConfiguration configuration = new AndroidFacetConfiguration();
+        if (PropertiesComponent.getInstance().isValueSet(AndroidFacetConfiguration.DEFAULT_SDK_PATH_PROPERTY)) {
+            configuration.SDK_PATH = PropertiesComponent.getInstance().getValue(AndroidFacetConfiguration.DEFAULT_SDK_PATH_PROPERTY); 
+        }
+        return configuration;
     }
 
     public AndroidFacet createFacet(@NotNull Module module, String name, @NotNull AndroidFacetConfiguration configuration, @Nullable Facet underlyingFacet) {
@@ -38,7 +43,7 @@ public class AndroidFacetType extends FacetType<AndroidFacet, AndroidFacetConfig
                 if (!existentFacetConfigurations.isEmpty()) {
                   return existentFacetConfigurations.iterator().next();
                 }
-                return new AndroidFacetConfiguration();
+                return createDefaultConfiguration();
             }
         };
         VirtualFileFilter androidManifestFilter = new VirtualFileFilter() {
