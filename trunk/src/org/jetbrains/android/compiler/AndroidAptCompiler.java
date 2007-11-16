@@ -1,7 +1,6 @@
 package org.jetbrains.android.compiler;
 
 import com.intellij.compiler.impl.CompilerUtil;
-import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.*;
@@ -17,11 +16,11 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.xml.DomFileElement;
 import com.intellij.util.xml.DomManager;
+import org.jetbrains.android.AndroidManager;
 import org.jetbrains.android.compiler.tools.AndroidApt;
 import org.jetbrains.android.dom.manifest.Manifest;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.facet.AndroidFacetConfiguration;
-import org.jetbrains.android.AndroidManager;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -173,7 +172,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
             Module[] modules = compileScope.getAffectedModules();
             List<GenerationItem> items = new ArrayList<GenerationItem>();
             for (Module module : modules) {
-                AndroidFacet facet = FacetManager.getInstance(module).getFacetByType(AndroidFacet.ID);
+                AndroidFacet facet = AndroidFacet.getInstance(module);
                 if (facet != null) {
                     ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
                     VirtualFile[] sourceRoots = rootManager.getSourceRoots();
@@ -225,7 +224,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
                                 aptItem.getResourcesPath(),
                                 aptItem.getSdkPath()
                         );
-                        addMessages(messages);
+                        AndroidCompileUtil.addMessages(myContext, messages);
                         if (messages.get(CompilerMessageCategory.ERROR).isEmpty()) {
                             results.add(aptItem);
                         }
@@ -235,15 +234,6 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
                 }
             }
             return results.toArray(new GenerationItem[results.size()]);
-        }
-
-        private void addMessages(Map<CompilerMessageCategory, List<String>> messages) {
-            for (CompilerMessageCategory category : messages.keySet()) {
-                List<String> messageList = messages.get(category);
-                for (String message : messageList) {
-                    myContext.addMessage(category, message, null, -1, -1);
-                }
-            }
         }
     }
 }
