@@ -25,16 +25,44 @@ public final class AndroidApt {
     @NotNull
     public static Map<CompilerMessageCategory, List<String>> compile(String rootDirPath, String outDir, String resourceDir, String sdkPath) throws IOException {
         return ExternalCompilerTool.execute(
-                sdkPath + File.separator + "tools" + File.separator + TOOL,
+                buildToolPath(sdkPath),
                 "compile",
                 "-m",
                 "-J",
                 outDir,
                 "-M",
-                rootDirPath + File.separator + AndroidManager.MANIFEST_FILE_NAME,
+                buildManifestPath(rootDirPath),
                 "-S", resourceDir,
-                "-I", sdkPath + File.separator + "android.jar"
+                "-I", buildJarPath(sdkPath)
         );
+    }
+
+    @NotNull
+    public static Map<CompilerMessageCategory, List<String>> packageResources(String rootDirPath,
+                                                                              String sdkPath,
+                                                                              String resourceDir,
+                                                                              String outputPath) throws IOException {
+        return ExternalCompilerTool.execute(
+                buildToolPath(sdkPath),
+                "package",
+                "-f",     // force overwrite of existing files
+                "-c",     // compile resources from assets
+                "-M", buildManifestPath(rootDirPath),
+                "-S", resourceDir,
+                "-I", buildJarPath(sdkPath),
+                outputPath);
+    }
+
+    private static String buildToolPath(String sdkPath) {
+        return sdkPath + File.separator + "tools" + File.separator + TOOL;
+    }
+
+    private static String buildManifestPath(String rootDirPath) {
+        return rootDirPath + File.separator + AndroidManager.MANIFEST_FILE_NAME;
+    }
+
+    private static String buildJarPath(String sdkPath) {
+        return sdkPath + File.separator + "android.jar";
     }
 
 }

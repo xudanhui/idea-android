@@ -23,6 +23,9 @@
         <component>
             <implementation-class>org.jetbrains.android.compiler.AndroidDexCompiler</implementation-class>
         </component>
+        <component>
+            <implementation-class>org.jetbrains.android.compiler.AndroidPackagingCompiler</implementation-class>
+        </component>
     </project-components>
     <extensions xmlns="com.intellij">
         <dom.fileDescription implementation="org.jetbrains.android.dom.manifest.ManifestDomFileDescription"/>
