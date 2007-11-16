@@ -3,8 +3,8 @@ package org.jetbrains.android.run;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.project.Project;
+import org.jetbrains.android.AndroidManager;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,8 +14,6 @@ import javax.swing.*;
  * @author yole
  */
 public class AndroidRunConfigurationType implements ConfigurationType {
-    private Icon myIcon;
-
     private class AndroidRunConfigurationFactory extends ConfigurationFactory {
         protected AndroidRunConfigurationFactory(ConfigurationType type) {
             super(type);
@@ -35,7 +33,7 @@ public class AndroidRunConfigurationType implements ConfigurationType {
     }
 
     public Icon getIcon() {
-        return myIcon;
+        return AndroidManager.ANDROID_ICON;
     }
 
     public ConfigurationFactory[] getConfigurationFactories() {
@@ -49,7 +47,6 @@ public class AndroidRunConfigurationType implements ConfigurationType {
     }
 
     public void initComponent() {
-        myIcon = IconLoader.getIcon("/icons/android.png");
     }
 
     public void disposeComponent() {
