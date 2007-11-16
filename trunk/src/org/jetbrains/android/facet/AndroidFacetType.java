@@ -4,15 +4,14 @@ import com.intellij.facet.Facet;
 import com.intellij.facet.FacetType;
 import com.intellij.facet.autodetecting.FacetDetector;
 import com.intellij.facet.autodetecting.FacetDetectorRegistry;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileFilter;
-import com.intellij.ide.util.PropertiesComponent;
+import org.jetbrains.android.AndroidManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.android.AndroidManager;
 
 import javax.swing.*;
 import java.util.Collection;
@@ -55,6 +54,6 @@ public class AndroidFacetType extends FacetType<AndroidFacet, AndroidFacetConfig
     }
 
     public Icon getIcon() {
-        return IconLoader.getIcon("/icons/android.png");
+        return AndroidManager.ANDROID_ICON;
     }
 }
