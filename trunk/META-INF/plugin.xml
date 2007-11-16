@@ -26,5 +26,6 @@
     </project-components>
     <extensions xmlns="com.intellij">
         <dom.fileDescription implementation="org.jetbrains.android.dom.manifest.ManifestDomFileDescription"/>
+        <frameworkSupport implementation="org.jetbrains.android.facet.AndroidSupportProvider"/>
     </extensions>
 </idea-plugin>
