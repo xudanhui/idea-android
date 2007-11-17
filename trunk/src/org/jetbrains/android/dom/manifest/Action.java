@@ -6,7 +6,7 @@ import com.intellij.util.xml.DomElement;
 import org.jetbrains.android.dom.AndroidAttributeValue;
 import org.jetbrains.android.dom.LookupClass;
 import org.jetbrains.android.dom.LookupPrefix;
-import org.jetbrains.android.dom.manifest.converters.ConstantFieldConverter;
+import org.jetbrains.android.dom.converters.ConstantFieldConverter;
 
 /**
  * @author yole

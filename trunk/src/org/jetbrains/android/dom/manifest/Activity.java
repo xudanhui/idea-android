@@ -2,7 +2,7 @@ package org.jetbrains.android.dom.manifest;
 
 import com.intellij.psi.PsiClass;
 import com.intellij.util.xml.*;
-import org.jetbrains.android.dom.manifest.converters.PackageClassResolvingConverter;
+import org.jetbrains.android.dom.converters.PackageClassResolvingConverter;
 
 import java.util.List;
 
