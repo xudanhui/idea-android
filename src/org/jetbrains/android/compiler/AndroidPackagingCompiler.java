@@ -9,6 +9,7 @@ import com.intellij.util.io.ZipUtil;
 import org.jetbrains.android.compiler.tools.AndroidApt;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.facet.AndroidFacetConfiguration;
+import org.jetbrains.android.AndroidManager;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -66,8 +67,8 @@ public class AndroidPackagingCompiler implements ProjectComponent, PackagingComp
                     VirtualFile outputDir = context.getModuleOutputDirectory(module);
                     String tempOutputPath = new File(outputDir.getPath(), module.getName() + ".apk.tmp").getPath();
                     String outputPath = new File(outputDir.getPath(), module.getName() + ".apk").getPath();
-                    String classesDexPath = new File(outputDir.getPath(), "classes.dex").getPath();
-                    items.add(new AptPackagingItem(manifestFile, configuration.SDK_PATH, resourcesDir.getPath(),
+                    String classesDexPath = new File(outputDir.getPath(), AndroidManager.CLASSES_FILE_NAME).getPath();
+                    items.add(new AptPackagingItem(module, manifestFile, configuration.SDK_PATH, resourcesDir.getPath(),
                             tempOutputPath, outputPath, classesDexPath));
                 }
             }
@@ -103,7 +104,7 @@ public class AndroidPackagingCompiler implements ProjectComponent, PackagingComp
             FileOutputStream os = new FileOutputStream(finalPath);
             try {
                 Map<String, File> map = new HashMap<String, File>();
-                map.put("classes.dex", new File(classesDexPath));
+                map.put(AndroidManager.CLASSES_FILE_NAME, new File(classesDexPath));
                 ZipUtil.update(is, os, map);
             }
             finally {
@@ -126,10 +127,11 @@ public class AndroidPackagingCompiler implements ProjectComponent, PackagingComp
     }
 
     public ValidityState createValidityState(DataInputStream is) throws IOException {
-        return null;
+        return new ResourcesValidityState(is);
     }
 
     private class AptPackagingItem implements ProcessingItem {
+        private Module myModule;
         private VirtualFile myFile;
         private String mySdkPath;
         private String myResourcesPath;
@@ -137,8 +139,9 @@ public class AndroidPackagingCompiler implements ProjectComponent, PackagingComp
         private String myFinalPath;
         private String myClassesDexPath;
 
-        private AptPackagingItem(VirtualFile file, String sdkPath, String resourcesPath, String outputPath,
+        private AptPackagingItem(Module module, VirtualFile file, String sdkPath, String resourcesPath, String outputPath,
                                  String finalPath, String classesDexPath) {
+            myModule = module;
             myFile = file;
             mySdkPath = sdkPath;
             myResourcesPath = resourcesPath;
@@ -154,7 +157,7 @@ public class AndroidPackagingCompiler implements ProjectComponent, PackagingComp
 
         @Nullable
         public ValidityState getValidityState() {
-            return null;
+            return new ResourcesValidityState(myModule);
         }
 
         public String getSdkPath() {
