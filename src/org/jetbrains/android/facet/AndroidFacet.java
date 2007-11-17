@@ -3,22 +3,27 @@ package org.jetbrains.android.facet;
 import com.intellij.facet.Facet;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.FacetTypeId;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlFile;
-import com.intellij.util.xml.DomManager;
+import com.intellij.util.xml.DomElement;
 import com.intellij.util.xml.DomFileElement;
+import com.intellij.util.xml.DomManager;
 import org.jetbrains.android.AndroidManager;
 import org.jetbrains.android.dom.manifest.Manifest;
+import org.jetbrains.android.dom.resources.Resources;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author yole
@@ -72,14 +77,37 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     public Manifest getManifest() {
         final VirtualFile manifestFile = getManifestFile();
         if (manifestFile == null) return null;
-        return ApplicationManager.getApplication().runReadAction(new Computable<Manifest>() {
-            public Manifest compute() {
+        return loadDomElement(manifestFile, Manifest.class);
+    }
+
+    public List<Resources> getValueResources() {
+        List<Resources> result = new ArrayList<Resources>();
+        VirtualFile resDir = getResourcesDir();
+        if (resDir != null) {
+            VirtualFile valuesDir = resDir.findChild("values");
+            if (valuesDir != null) {
+                for(VirtualFile valuesFile: valuesDir.getChildren()) {
+                    if (!valuesFile.isDirectory() && valuesFile.getFileType().equals(StdFileTypes.XML)) {
+                        Resources resources = loadDomElement(valuesFile, Resources.class);
+                        if (resources != null) {
+                            result.add(resources);
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+    private <T extends DomElement> T loadDomElement(final VirtualFile manifestFile, final Class<T> aClass) {
+        return ApplicationManager.getApplication().runReadAction(new Computable<T>() {
+            public T compute() {
                 PsiFile file = PsiManager.getInstance(getModule().getProject()).findFile(manifestFile);
                 if (file == null || !(file instanceof XmlFile)) {
                     return null;
                 }
                 DomManager domManager = DomManager.getDomManager(getModule().getProject());
-                DomFileElement<Manifest> element = domManager.getFileElement((XmlFile) file, Manifest.class);
+                DomFileElement<T> element = domManager.getFileElement((XmlFile) file, aClass);
                 if (element == null) return null;
                 return element.getRootElement();
             }
