@@ -22,6 +22,7 @@ import javax.swing.*;
  */
 public class AndroidManager implements ApplicationComponent, InspectionToolProvider, FileTemplateGroupDescriptorFactory {
     public static final String MANIFEST_FILE_NAME = "AndroidManifest.xml";
+    public static final String CLASSES_FILE_NAME = "classes.dex";
 
     public static final Icon ANDROID_ICON = IconLoader.getIcon("/icons/android.png");
 
