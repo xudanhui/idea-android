@@ -1,4 +1,4 @@
-package org.jetbrains.android.dom.manifest.converters;
+package org.jetbrains.android.dom.converters;
 
 import com.intellij.psi.*;
 import com.intellij.psi.search.GlobalSearchScope;
