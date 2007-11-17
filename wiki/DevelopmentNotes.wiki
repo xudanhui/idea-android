@@ -21,6 +21,7 @@
 
   * Complete implementation of AIDL language
   * i18n actions to move string literals to resource files
+  * Visual designer for views
   
 == Problems ==
 
