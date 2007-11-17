@@ -6,9 +6,19 @@ import com.intellij.facet.FacetTypeId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.Computable;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.xml.XmlFile;
+import com.intellij.util.xml.DomManager;
+import com.intellij.util.xml.DomFileElement;
 import org.jetbrains.android.AndroidManager;
+import org.jetbrains.android.dom.manifest.Manifest;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.File;
 
 /**
  * @author yole
@@ -47,5 +57,32 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
             return parent.findChild(getConfiguration().RESOURCES_PATH);
         }
         return null;
+    }
+
+    public String getSdkPath() {
+        return getConfiguration().SDK_PATH;
+    }
+
+    public String getOutputPackage() {
+        VirtualFile compilerOutput = ModuleRootManager.getInstance(getModule()).getCompilerOutputPath();
+        return new File(compilerOutput.getPath(), getModule().getName() + ".apk").getPath();
+    }
+
+    @Nullable
+    public Manifest getManifest() {
+        final VirtualFile manifestFile = getManifestFile();
+        if (manifestFile == null) return null;
+        return ApplicationManager.getApplication().runReadAction(new Computable<Manifest>() {
+            public Manifest compute() {
+                PsiFile file = PsiManager.getInstance(getModule().getProject()).findFile(manifestFile);
+                if (file == null || !(file instanceof XmlFile)) {
+                    return null;
+                }
+                DomManager domManager = DomManager.getDomManager(getModule().getProject());
+                DomFileElement<Manifest> element = domManager.getFileElement((XmlFile) file, Manifest.class);
+                if (element == null) return null;
+                return element.getRootElement();
+            }
+        });
     }
 }
