@@ -38,5 +38,6 @@
         <dom.fileDescription implementation="org.jetbrains.android.dom.manifest.ManifestDomFileDescription"/>
         <dom.fileDescription implementation="org.jetbrains.android.dom.resources.ResourcesDomFileDescription"/>
         <frameworkSupport implementation="org.jetbrains.android.facet.AndroidSupportProvider"/>
+        <configurationProducer implementation="org.jetbrains.android.run.AndroidConfigurationProducer"/>
     </extensions>
 </idea-plugin>
