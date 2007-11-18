@@ -5,7 +5,7 @@ import com.intellij.util.xml.*;
 import org.jetbrains.android.dom.AndroidAttributeValue;
 import org.jetbrains.android.dom.converters.PackageClassResolvingConverter;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
-import org.jetbrains.android.dom.resources.ResourceReference;
+import org.jetbrains.android.dom.resources.ResourceValue;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public interface Activity extends DomElement {
     GenericAttributeValue<PsiClass> getActivityClass();
 
     @Convert(ResourceReferenceConverter.class)
-    AndroidAttributeValue<ResourceReference> getLabel();
+    AndroidAttributeValue<ResourceValue> getLabel();
 
     List<IntentFilter> getIntentFilters();
 }

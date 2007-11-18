@@ -3,23 +3,23 @@ package org.jetbrains.android.dom.resources;
 /**
  * @author yole
  */
-public class ResourceReference {
+public class ResourceValue {
     private String myValue;
     private char myPrefix;
     private String myResourceType;
     private String myResourceName;
 
-    private ResourceReference() {
+    private ResourceValue() {
     }
 
-    public static ResourceReference literal(String value) {
-        ResourceReference result = new ResourceReference();
+    public static ResourceValue literal(String value) {
+        ResourceValue result = new ResourceValue();
         result.myValue = value;
         return result;
     }
 
-    public static ResourceReference reference(String value) {
-        ResourceReference result = new ResourceReference();
+    public static ResourceValue reference(String value) {
+        ResourceValue result = new ResourceValue();
         assert value.length() > 0;
         result.myPrefix = value.charAt(0);
         int pos = value.indexOf('/');
