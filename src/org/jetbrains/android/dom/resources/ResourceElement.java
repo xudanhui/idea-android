@@ -6,7 +6,7 @@ import com.intellij.util.xml.GenericAttributeValue;
 /**
  * @author yole
  */
-public interface ResourceString extends DomElement {
+public interface ResourceElement extends DomElement {
     GenericAttributeValue<String> getName();
     String getValue();
 }

@@ -33,6 +33,14 @@ public class ResourceValue {
         return result;
     }
 
+    public static ResourceValue referenceTo(char prefix, String resourceType, String resourceName) {
+        ResourceValue result = new ResourceValue();
+        result.myPrefix = prefix;
+        result.myResourceType = resourceType;
+        result.myResourceName = resourceName;
+        return result;
+    }
+
     public boolean isReference() {
         return myValue == null;
     }
@@ -47,5 +55,12 @@ public class ResourceValue {
 
     public String getResourceName() {
         return myResourceName;
+    }
+
+    public String toString() {
+        if (myValue != null) {
+            return myValue;
+        }
+        return myPrefix + myResourceType + "/" + myResourceName;
     }
 }

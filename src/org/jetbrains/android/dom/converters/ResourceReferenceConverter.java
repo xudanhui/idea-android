@@ -6,9 +6,9 @@ import com.intellij.util.xml.ConvertContext;
 import com.intellij.util.xml.CustomReferenceConverter;
 import com.intellij.util.xml.GenericDomValue;
 import com.intellij.util.xml.ResolvingConverter;
-import org.jetbrains.android.dom.resources.ResourceString;
+import org.jetbrains.android.dom.resources.ResourceElement;
 import org.jetbrains.android.dom.resources.ResourceValue;
-import org.jetbrains.android.dom.resources.Resources;
+import org.jetbrains.android.dom.ResourceType;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +25,17 @@ public class ResourceReferenceConverter extends ResolvingConverter<ResourceValue
     @NotNull
     public Collection<? extends ResourceValue> getVariants(ConvertContext context) {
         List<ResourceValue> result = new ArrayList<ResourceValue>();
+        ResourceType resourceType = context.getInvocationElement().getAnnotation(ResourceType.class);
+        AndroidFacet facet = AndroidFacet.getInstance(context.getModule());
+        if (facet != null && resourceType != null) {
+            List<ResourceElement> elements = facet.getResourcesOfType(resourceType.value());
+            for(ResourceElement element: elements) {
+                String name = element.getName().getValue();
+                if (name != null) {
+                    result.add(ResourceValue.referenceTo('@', resourceType.value(), name));
+                }
+            }
+        }
         return result;
     }
 
@@ -39,7 +50,7 @@ public class ResourceReferenceConverter extends ResolvingConverter<ResourceValue
     }
 
     public String toString(@Nullable ResourceValue resourceElement, ConvertContext context) {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return resourceElement != null ? resourceElement.toString() : null;
     }
 
     @NotNull
@@ -48,16 +59,11 @@ public class ResourceReferenceConverter extends ResolvingConverter<ResourceValue
         if (ref != null && ref.isReference()) {
             String resType = ref.getResourceType();
             AndroidFacet facet = AndroidFacet.getInstance(context.getModule());
-            List<Resources> resources = facet.getValueResources();
             GenericDomValue target = null;
-            for(Resources resourcesFile: resources) {
-                if (resType.equals("string")) {
-                    List<ResourceString> list = resourcesFile.getStrings();
-                    for(ResourceString rs: list) {
-                        if (ref.getResourceName().equals(rs.getName().getValue())) {
-                            target = rs.getName();
-                        }
-                    }
+            List<ResourceElement> list = facet.getResourcesOfType(resType);
+            for(ResourceElement rs: list) {
+                if (ref.getResourceName().equals(rs.getName().getValue())) {
+                    target = rs.getName();
                 }
             }
             return new PsiReference[] { new ResourceReference(value, target)};

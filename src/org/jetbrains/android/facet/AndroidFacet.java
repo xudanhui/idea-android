@@ -18,6 +18,7 @@ import com.intellij.util.xml.DomManager;
 import org.jetbrains.android.AndroidManager;
 import org.jetbrains.android.dom.manifest.Manifest;
 import org.jetbrains.android.dom.resources.Resources;
+import org.jetbrains.android.dom.resources.ResourceElement;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -112,5 +113,16 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
                 return element.getRootElement();
             }
         });
+    }
+
+    public List<ResourceElement> getResourcesOfType(String resType) {
+        List<ResourceElement> result = new ArrayList<ResourceElement>();
+        List<Resources> resourceFiles = getValueResources();
+        for(Resources res: resourceFiles) {
+            if (resType.equals("string")) {
+                result.addAll(res.getStrings());
+            }
+        }
+        return result;
     }
 }
