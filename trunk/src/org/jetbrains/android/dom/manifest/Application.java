@@ -16,6 +16,8 @@ import java.util.List;
 public interface Application extends DomElement {
     List<Activity> getActivities();
     List<Provider> getProviders();
+    List<Service> getServices();
+    List<Receiver> getReceivers();
 
     @Convert(ResourceReferenceConverter.class)
     @ResourceType("string")
