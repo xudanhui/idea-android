@@ -5,7 +5,6 @@
   * Proper make support (ValidityState) for aapt, aidl and dex
   * Complete code insight for manifests
   * "Deploy on make" option (to avoid emulator restart when restarting app)
-  * Select activity to run in run configuration settings
   * Select emulator startup options in run configuration settings
   * Auto-add android.jar to module dependencies when Android facet is detected
   * Quickfix to regenerate R.java for unresolved resource references
