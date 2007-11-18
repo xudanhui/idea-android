@@ -1,11 +1,11 @@
 package org.jetbrains.android.dom.converters;
 
+import com.intellij.openapi.util.Comparing;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiJavaFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
-import com.intellij.util.Processor;
 import com.intellij.util.Query;
 import com.intellij.util.xml.*;
 import org.jetbrains.android.dom.manifest.Manifest;
@@ -35,15 +35,7 @@ public class PackageClassResolvingConverter extends ResolvingConverter<PsiClass>
                 Query<PsiClass> query = ClassInheritorsSearch.search(baseClass,
                         GlobalSearchScope.moduleWithDependenciesScope(context.getModule()),
                         true);
-                query.forEach(new Processor<PsiClass>() {
-                    public boolean process(PsiClass psiClass) {
-                        PsiDirectory directory = psiClass.getContainingFile().getContainingDirectory();
-                        if (directory.getPackage().getQualifiedName().equals(packageName)) {
-                            result.add(psiClass);
-                        }
-                        return true;
-                    }
-                });
+                result.addAll(query.findAll());
             }
         }
         return result;
@@ -55,14 +47,34 @@ public class PackageClassResolvingConverter extends ResolvingConverter<PsiClass>
         Manifest manifest = domElement.getParentOfType(Manifest.class, true);
         if (manifest != null) {
             String packageName = manifest.getPackage().getValue();
-            return context.getPsiManager().findClass(packageName + "." + s,
+            String className;
+            if (s.startsWith(".")) {
+                className = packageName + s;
+            }
+            else {
+                className = packageName + "." + s;
+            }
+            return context.getPsiManager().findClass(className,
                     GlobalSearchScope.moduleWithDependenciesAndLibrariesScope(context.getModule()));
         }
         return null;
     }
 
     public String toString(@Nullable PsiClass psiClass, ConvertContext context) {
-        return psiClass == null ? null : psiClass.getName();
+        if (psiClass == null) return null;
+        String qName = psiClass.getQualifiedName();
+        if (qName == null) return null;
+        DomElement domElement = context.getInvocationElement();
+        Manifest manifest = domElement.getParentOfType(Manifest.class, true);
+        final String packageName = manifest == null ? null : manifest.getPackage().getValue();
+        PsiJavaFile psiFile = (PsiJavaFile) psiClass.getContainingFile();
+        if (Comparing.equal(psiFile.getPackageName(), packageName)) {
+            return psiClass.getName();
+        }
+        else if (packageName != null && qName.startsWith(packageName)) {
+            return qName.substring(packageName.length());
+        }
+        return qName;
     }
 
     public void bindReference(GenericDomValue<PsiClass> genericValue, ConvertContext context, PsiElement newTarget) {
