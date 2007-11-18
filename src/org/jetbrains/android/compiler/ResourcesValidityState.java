@@ -20,13 +20,15 @@ public class ResourcesValidityState implements ValidityState {
     private Map<String, Long> myResourceTimestamps = new HashMap<String, Long>();
     private long myClassesTimestamp;
 
-    public ResourcesValidityState(Module module) {
+    public ResourcesValidityState(Module module, boolean includeClassesDex) {
         myClassesTimestamp = -1;
-        VirtualFile outputPath = ModuleRootManager.getInstance(module).getCompilerOutputPath();
-        if (outputPath != null) {
-            VirtualFile classesDex = outputPath.findChild(AndroidManager.CLASSES_FILE_NAME);
-            if (classesDex != null) {
-                myClassesTimestamp = classesDex.getTimeStamp();
+        if (includeClassesDex) {
+            VirtualFile outputPath = ModuleRootManager.getInstance(module).getCompilerOutputPath();
+            if (outputPath != null) {
+                VirtualFile classesDex = outputPath.findChild(AndroidManager.CLASSES_FILE_NAME);
+                if (classesDex != null) {
+                    myClassesTimestamp = classesDex.getTimeStamp();
+                }
             }
         }
         AndroidFacet facet = AndroidFacet.getInstance(module);
