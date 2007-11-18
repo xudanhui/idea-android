@@ -65,6 +65,13 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
         return null;
     }
 
+    @Nullable
+    private VirtualFile getResourceTypeDir(String resourceType) {
+        VirtualFile resourcesDir = getResourcesDir();
+        if (resourcesDir == null) return null;
+        return resourcesDir.findChild(resourceType);
+    }
+
     public String getSdkPath() {
         return getConfiguration().SDK_PATH;
     }
@@ -83,16 +90,13 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
 
     public List<Resources> getValueResources() {
         List<Resources> result = new ArrayList<Resources>();
-        VirtualFile resDir = getResourcesDir();
-        if (resDir != null) {
-            VirtualFile valuesDir = resDir.findChild("values");
-            if (valuesDir != null) {
-                for(VirtualFile valuesFile: valuesDir.getChildren()) {
-                    if (!valuesFile.isDirectory() && valuesFile.getFileType().equals(StdFileTypes.XML)) {
-                        Resources resources = loadDomElement(valuesFile, Resources.class);
-                        if (resources != null) {
-                            result.add(resources);
-                        }
+        VirtualFile valuesDir = getResourceTypeDir("values");
+        if (valuesDir != null) {
+            for(VirtualFile valuesFile: valuesDir.getChildren()) {
+                if (!valuesFile.isDirectory() && valuesFile.getFileType().equals(StdFileTypes.XML)) {
+                    Resources resources = loadDomElement(valuesFile, Resources.class);
+                    if (resources != null) {
+                        result.add(resources);
                     }
                 }
             }
@@ -121,6 +125,53 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
         for(Resources res: resourceFiles) {
             if (resType.equals("string")) {
                 result.addAll(res.getStrings());
+            }
+        }
+        return result;
+    }
+
+    @Nullable
+    public PsiFile findResourceFile(String resType, String resourceName) {
+        if (resType.equals("drawable")) {
+            return findDrawable(resourceName);
+        }
+        return null;
+    }
+
+    private static final String[] DRAWABLE_EXTENSIONS = new String[] { ".png", ".9.png", ".jpg" };
+
+    @Nullable
+    private PsiFile findDrawable(String resourceName) {
+        VirtualFile typeDir = getResourceTypeDir("drawable");
+        if (typeDir == null) return null;
+        for(String ext: DRAWABLE_EXTENSIONS) {
+            final VirtualFile drawableFile = typeDir.findChild(resourceName + ext);
+            if (drawableFile != null) {
+                return ApplicationManager.getApplication().runReadAction(new Computable<PsiFile>() {
+                    public PsiFile compute() {
+                        return PsiManager.getInstance(getModule().getProject()).findFile(drawableFile);
+                    }
+                });
+            }
+        }
+        return null;
+    }
+
+    public List<String> getResourceFileNames(String resourceType) {
+        List<String> result = new ArrayList<String>();
+        if (resourceType.equals("drawable")) {
+            VirtualFile drawablesDir = getResourceTypeDir("drawable");
+            if (drawablesDir != null) {
+                VirtualFile[] files = drawablesDir.getChildren();
+                for(VirtualFile file: files) {
+                    if (file.isDirectory()) continue;
+                    for(String ext: DRAWABLE_EXTENSIONS) {
+                        String fileName = file.getName();
+                        if (fileName.endsWith(ext)) {
+                            result.add(fileName.substring(0, fileName.length()-ext.length()));
+                        }
+                    }
+                }
             }
         }
         return result;
