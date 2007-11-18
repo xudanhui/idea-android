@@ -25,4 +25,6 @@ public interface Activity extends DomElement {
     AndroidAttributeValue<ResourceValue> getLabel();
 
     List<IntentFilter> getIntentFilters();
+
+    IntentFilter addIntentFilter();
 }
