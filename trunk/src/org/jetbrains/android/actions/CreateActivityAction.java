@@ -40,6 +40,7 @@ public class CreateActivityAction extends CreateElementActionBase {
     @NotNull
     protected PsiElement[] invokeDialog(Project project, PsiDirectory directory) {
         myActivityNameTextField.setText("");
+        myLabelTextField.setText("");
         myMarkAsStartupActivityCheckBox.setSelected(isFirstActivity(directory));
 
         final MyInputValidator validator = new MyInputValidator(project, directory);
