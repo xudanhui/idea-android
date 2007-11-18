@@ -7,7 +7,7 @@ import com.intellij.util.xml.CustomReferenceConverter;
 import com.intellij.util.xml.GenericDomValue;
 import com.intellij.util.xml.ResolvingConverter;
 import com.intellij.util.xml.impl.GenericDomValueReference;
-import org.jetbrains.android.dom.resources.ResourceReference;
+import org.jetbrains.android.dom.resources.ResourceValue;
 import org.jetbrains.android.dom.resources.Resources;
 import org.jetbrains.android.dom.resources.ResourceString;
 import org.jetbrains.android.facet.AndroidFacet;
@@ -22,30 +22,30 @@ import java.util.List;
 /**
  * @author yole
  */
-public class ResourceReferenceConverter extends ResolvingConverter<ResourceReference> implements CustomReferenceConverter<ResourceReference> {
+public class ResourceReferenceConverter extends ResolvingConverter<ResourceValue> implements CustomReferenceConverter<ResourceValue> {
     @NotNull
-    public Collection<? extends ResourceReference> getVariants(ConvertContext context) {
-        List<ResourceReference> result = new ArrayList<ResourceReference>();
+    public Collection<? extends ResourceValue> getVariants(ConvertContext context) {
+        List<ResourceValue> result = new ArrayList<ResourceValue>();
         return result;
     }
 
-    public ResourceReference fromString(@Nullable @NonNls String s, ConvertContext context) {
+    public ResourceValue fromString(@Nullable @NonNls String s, ConvertContext context) {
         if (s == null) {
             return null;
         }
         if (s.startsWith("@")) {
-            return ResourceReference.reference(s);
+            return ResourceValue.reference(s);
         }
-        return ResourceReference.literal(s);
+        return ResourceValue.literal(s);
     }
 
-    public String toString(@Nullable ResourceReference resourceElement, ConvertContext context) {
+    public String toString(@Nullable ResourceValue resourceElement, ConvertContext context) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     @NotNull
-    public PsiReference[] createReferences(GenericDomValue<ResourceReference> value, PsiElement element, ConvertContext context) {
-        ResourceReference ref = value.getValue();
+    public PsiReference[] createReferences(GenericDomValue<ResourceValue> value, PsiElement element, ConvertContext context) {
+        ResourceValue ref = value.getValue();
         if (ref != null && ref.isReference()) {
             String resType = ref.getResourceType();
             AndroidFacet facet = AndroidFacet.getInstance(context.getModule());
