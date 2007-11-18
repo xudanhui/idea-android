@@ -27,6 +27,13 @@
             <implementation-class>org.jetbrains.android.compiler.AndroidPackagingCompiler</implementation-class>
         </component>
     </project-components>
+    <actions>
+        <action id="org.jetbrains.android.actions.CreateActivityAction"
+                class="org.jetbrains.android.actions.CreateActivityAction" text="Activity"
+                description="Create new Android activity">
+            <add-to-group group-id="NewGroup" anchor="last"/>
+        </action>
+    </actions>
     <extensions xmlns="com.intellij">
         <dom.fileDescription implementation="org.jetbrains.android.dom.manifest.ManifestDomFileDescription"/>
         <dom.fileDescription implementation="org.jetbrains.android.dom.resources.ResourcesDomFileDescription"/>

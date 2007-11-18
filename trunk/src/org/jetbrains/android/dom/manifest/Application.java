@@ -19,6 +19,8 @@ public interface Application extends DomElement {
     List<Service> getServices();
     List<Receiver> getReceivers();
 
+    Activity addActivity();
+
     @Convert(ResourceReferenceConverter.class)
     @ResourceType("string")
     AndroidAttributeValue<ResourceValue> getLabel();

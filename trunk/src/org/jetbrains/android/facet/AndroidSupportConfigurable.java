@@ -21,6 +21,7 @@ import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.Nullable;
@@ -28,6 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Properties;
+import java.io.IOException;
 
 /**
  * @author yole
@@ -94,7 +96,8 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
         libraryModel.commit();
 
         Library.ModifiableModel androidLibraryModel = androidLibrary.getModifiableModel();
-        androidLibraryModel.addRoot(androidJar, OrderRootType.CLASSES);
+        VirtualFile androidRoot = JarFileSystem.getInstance().findFileByPath(androidJar.getPath() + JarFileSystem.JAR_SEPARATOR);
+        androidLibraryModel.addRoot(androidRoot, OrderRootType.CLASSES);
         if (javadocDir != null) {
             androidLibraryModel.addRoot(javadocDir, OrderRootType.JAVADOC);
         }
@@ -112,6 +115,7 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
     }
 
     private static void createAndroidManifest(Project project, VirtualFile file) {
+        file.refresh(false, false);
         PsiDirectory directory = PsiManager.getInstance(project).findDirectory(file);
         if (directory != null) {
             FileTemplate template = FileTemplateManager.getInstance().getJ2eeTemplate("AndroidManifest.xml");
@@ -119,6 +123,12 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
             try {
                 FileTemplateUtil.createFromTemplate(template, "AndroidManifest.xml", properties, directory);
             } catch (Exception e) {
+                LOG.error(e);
+            }
+
+            try {
+                file.createChildDirectory(project, "res");
+            } catch (IOException e) {
                 LOG.error(e);
             }
         }
