@@ -94,7 +94,7 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
         libraryModel.commit();
 
         Library.ModifiableModel androidLibraryModel = androidLibrary.getModifiableModel();
-        androidLibraryModel.addRoot(androidJar, OrderRootType.SOURCES);
+        androidLibraryModel.addRoot(androidJar, OrderRootType.CLASSES);
         if (javadocDir != null) {
             androidLibraryModel.addRoot(javadocDir, OrderRootType.JAVADOC);
         }
