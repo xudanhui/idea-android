@@ -77,6 +77,7 @@ public class AndroidPackagingCompiler implements ProjectComponent, PackagingComp
     }
 
     public ProcessingItem[] process(CompileContext context, ProcessingItem[] items) {
+        context.getProgressIndicator().setText("Building Android package...");
         final List<ProcessingItem> result = new ArrayList<ProcessingItem>();
         for(ProcessingItem processingItem: items) {
             AptPackagingItem item = (AptPackagingItem) processingItem;
@@ -157,7 +158,7 @@ public class AndroidPackagingCompiler implements ProjectComponent, PackagingComp
 
         @Nullable
         public ValidityState getValidityState() {
-            return new ResourcesValidityState(myModule);
+            return new ResourcesValidityState(myModule, true);
         }
 
         public String getSdkPath() {

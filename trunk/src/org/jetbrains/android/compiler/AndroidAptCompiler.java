@@ -7,20 +7,12 @@ import com.intellij.openapi.compiler.*;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.xml.XmlFile;
-import com.intellij.util.xml.DomFileElement;
-import com.intellij.util.xml.DomManager;
-import org.jetbrains.android.AndroidManager;
 import org.jetbrains.android.compiler.tools.AndroidApt;
 import org.jetbrains.android.dom.manifest.Manifest;
 import org.jetbrains.android.facet.AndroidFacet;
-import org.jetbrains.android.facet.AndroidFacetConfiguration;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,11 +31,9 @@ import java.util.Map;
 public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComponent {
     private static final GenerationItem[] EMPTY_GENERATION_ITEM_ARRAY = {};
 
-    private final Project myProject;
     private final CompilerManager myCompilerManager;
 
-    public AndroidAptCompiler(Project project, CompilerManager compilerManager) {
-        myProject = project;
+    public AndroidAptCompiler(CompilerManager compilerManager) {
         myCompilerManager = compilerManager;
     }
 
@@ -58,8 +48,8 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
 
     public GenerationItem[] generate(CompileContext context, GenerationItem[] items, VirtualFile outputRootDirectory) {
         if (items != null && items.length > 0) {
-            Application application = ApplicationManager.getApplication();
-            GenerationItem[] generationItems = application.runReadAction(new GenerateAction(context, items));
+            context.getProgressIndicator().setText("Generating R.java...");
+            GenerationItem[] generationItems = doGenerate(context, items);
             for (GenerationItem item : generationItems) {
                 File generatedFile = ((AptGenerationItem) item).getGeneratedFile();
                 if (generatedFile != null) {
@@ -71,6 +61,29 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         return EMPTY_GENERATION_ITEM_ARRAY;
     }
 
+    private static GenerationItem[] doGenerate(CompileContext context, GenerationItem[] items) {
+        List<GenerationItem> results = new ArrayList<GenerationItem>(items.length);
+        for (GenerationItem item : items) {
+            if (item instanceof AptGenerationItem) {
+                AptGenerationItem aptItem = (AptGenerationItem) item;
+                try {
+                    Map<CompilerMessageCategory, List<String>> messages = AndroidApt.compile(
+                            aptItem.getRootPath(),
+                            aptItem.getSourceRootPath(),
+                            aptItem.getResourcesPath(),
+                            aptItem.getSdkPath()
+                    );
+                    AndroidCompileUtil.addMessages(context, messages);
+                    if (messages.get(CompilerMessageCategory.ERROR).isEmpty()) {
+                        results.add(aptItem);
+                    }
+                } catch (IOException e) {
+                    context.addMessage(CompilerMessageCategory.ERROR, e.getMessage(), null, -1, -1);
+                }
+            }
+        }
+        return results.toArray(new GenerationItem[results.size()]);
+    }
     @NotNull
     public String getDescription() {
         return AndroidApt.TOOL;
@@ -81,7 +94,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
     }
 
     public ValidityState createValidityState(DataInputStream is) throws IOException {
-        return null;
+        return new ResourcesValidityState(is);
     }
 
     public void projectOpened() {
@@ -138,7 +151,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         }
 
         public ValidityState getValidityState() {
-            return null;
+            return new ResourcesValidityState(myModule, false);
         }
 
         public Module getModule() {
@@ -158,7 +171,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         }
     }
 
-    private final class PrepareAction implements Computable<GenerationItem[]> {
+    private static final class PrepareAction implements Computable<GenerationItem[]> {
         private final CompileContext myContext;
 
         public PrepareAction(CompileContext context) {
@@ -167,73 +180,24 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
 
         public GenerationItem[] compute() {
             CompileScope compileScope = myContext.getCompileScope();
-            PsiManager psiManager = PsiManager.getInstance(myProject);
-            DomManager domManager = DomManager.getDomManager(myProject);
             Module[] modules = compileScope.getAffectedModules();
             List<GenerationItem> items = new ArrayList<GenerationItem>();
             for (Module module : modules) {
                 AndroidFacet facet = AndroidFacet.getInstance(module);
                 if (facet != null) {
-                    ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-                    VirtualFile[] sourceRoots = rootManager.getSourceRoots();
-                    VirtualFile[] roots = rootManager.getContentRoots();
-                    AndroidFacetConfiguration configuration = facet.getConfiguration();
-                    for (VirtualFile root : roots) {
-                        VirtualFile manifestFile = root.findChild(AndroidManager.MANIFEST_FILE_NAME);
-                        if (manifestFile != null) {
-                            PsiFile manifestPsiFile = psiManager.findFile(manifestFile);
-                            if (manifestPsiFile instanceof XmlFile) {
-                                XmlFile manifestXmlFile = (XmlFile) manifestPsiFile;
-                                DomFileElement<Manifest> manifest = domManager.getFileElement(manifestXmlFile, Manifest.class);
-                                if (manifest != null) {
-                                    Manifest rootElement = manifest.getRootElement();
-                                    VirtualFile res = root.findChild(configuration.RESOURCES_PATH);
-                                    if (res != null && res.isDirectory()) {
-                                        for (VirtualFile sourceRoot : sourceRoots) {
-                                            items.add(new AptGenerationItem(module, root.getPath(), res.getPath(), sourceRoot.getPath(), configuration.SDK_PATH, rootElement.getPackage().getValue()));
-                                        }
-                                    }
-                                }
-                            }
+                    Manifest manifest = facet.getManifest();
+                    VirtualFile resourcesDir = facet.getResourcesDir();
+                    if (manifest != null && resourcesDir != null) {
+                        ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
+                        VirtualFile[] sourceRoots = rootManager.getSourceRoots();
+                        for (VirtualFile sourceRoot : sourceRoots) {
+                            items.add(new AptGenerationItem(module, resourcesDir.getParent().getPath(), resourcesDir.getPath(),
+                                    sourceRoot.getPath(), facet.getSdkPath(), manifest.getPackage().getValue()));
                         }
                     }
                 }
             }
             return items.toArray(new GenerationItem[items.size()]);
-        }
-    }
-
-    private static final class GenerateAction implements Computable<GenerationItem[]> {
-        private final CompileContext myContext;
-        private final GenerationItem[] myItems;
-
-        public GenerateAction(CompileContext context, GenerationItem[] items) {
-            myContext = context;
-            myItems = items;
-        }
-
-        public GenerationItem[] compute() {
-            List<GenerationItem> results = new ArrayList<GenerationItem>(myItems.length);
-            for (GenerationItem item : myItems) {
-                if (item instanceof AptGenerationItem) {
-                    AptGenerationItem aptItem = (AptGenerationItem) item;
-                    try {
-                        Map<CompilerMessageCategory, List<String>> messages = AndroidApt.compile(
-                                aptItem.getRootPath(),
-                                aptItem.getSourceRootPath(),
-                                aptItem.getResourcesPath(),
-                                aptItem.getSdkPath()
-                        );
-                        AndroidCompileUtil.addMessages(myContext, messages);
-                        if (messages.get(CompilerMessageCategory.ERROR).isEmpty()) {
-                            results.add(aptItem);
-                        }
-                    } catch (IOException e) {
-                        myContext.addMessage(CompilerMessageCategory.ERROR, e.getMessage(), null, -1, -1);
-                    }
-                }
-            }
-            return results.toArray(new GenerationItem[results.size()]);
         }
     }
 }
