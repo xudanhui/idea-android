@@ -12,6 +12,16 @@ public class ResourceValue {
     private ResourceValue() {
     }
 
+    public static ResourceValue parse(String s) {
+        if (s == null) {
+            return null;
+        }
+        if (s.startsWith("@")) {
+            return reference(s);
+        }
+        return literal(s);
+    }
+
     public static ResourceValue literal(String value) {
         ResourceValue result = new ResourceValue();
         result.myValue = value;
