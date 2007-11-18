@@ -6,10 +6,9 @@ import com.intellij.util.xml.ConvertContext;
 import com.intellij.util.xml.CustomReferenceConverter;
 import com.intellij.util.xml.GenericDomValue;
 import com.intellij.util.xml.ResolvingConverter;
-import com.intellij.util.xml.impl.GenericDomValueReference;
+import org.jetbrains.android.dom.resources.ResourceString;
 import org.jetbrains.android.dom.resources.ResourceValue;
 import org.jetbrains.android.dom.resources.Resources;
-import org.jetbrains.android.dom.resources.ResourceString;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -50,16 +49,18 @@ public class ResourceReferenceConverter extends ResolvingConverter<ResourceValue
             String resType = ref.getResourceType();
             AndroidFacet facet = AndroidFacet.getInstance(context.getModule());
             List<Resources> resources = facet.getValueResources();
+            GenericDomValue target = null;
             for(Resources resourcesFile: resources) {
                 if (resType.equals("string")) {
                     List<ResourceString> list = resourcesFile.getStrings();
                     for(ResourceString rs: list) {
                         if (ref.getResourceName().equals(rs.getName().getValue())) {
-                            return new PsiReference[] { new GenericDomValueReference(rs.getName())};                        
+                            target = rs.getName();
                         }
                     }
                 }
             }
+            return new PsiReference[] { new ResourceReference(value, target)};
         }
         return new PsiReference[0];
     }
