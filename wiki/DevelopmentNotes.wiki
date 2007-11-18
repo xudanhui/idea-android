@@ -31,3 +31,4 @@
   * How to implement rename and find usages for resource IDs?
   * aapt source generating compiler is only correctly invoked for project compile scope. For module compile scope (used for run), the generate() method isn't called.
   * "adb shell am start" occasionally fails (probably because it's invoked too early during the emulator startup process). Should either find a better way to wait for emulator readiness, or auto-retry on failure.
+  * Emulator fails to start if no resources are defined in an app (and resources.arsc is missing in generated .apk). Should probably check during make that at least one resource is present.
