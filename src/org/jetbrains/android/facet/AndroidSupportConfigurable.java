@@ -13,23 +13,25 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.OrderEntry;
+import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Properties;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 /**
  * @author yole
@@ -73,6 +75,7 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
             StartupManager.getInstance(project).registerPostStartupActivity(new Runnable() {
                 public void run() {
                     createAndroidManifest(project, files[0]);
+                    createResources(project, files [0]);
                 }
             });
         }
@@ -114,9 +117,9 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
         modifiableRootModel.rearrangeOrderEntries(newEntries);
     }
 
-    private static void createAndroidManifest(Project project, VirtualFile file) {
-        file.refresh(false, false);
-        PsiDirectory directory = PsiManager.getInstance(project).findDirectory(file);
+    private static void createAndroidManifest(Project project, VirtualFile rootDir) {
+        rootDir.refresh(false, false);
+        PsiDirectory directory = PsiManager.getInstance(project).findDirectory(rootDir);
         if (directory != null) {
             FileTemplate template = FileTemplateManager.getInstance().getJ2eeTemplate("AndroidManifest.xml");
             Properties properties = FileTemplateManager.getInstance().getDefaultProperties();
@@ -125,12 +128,24 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
             } catch (Exception e) {
                 LOG.error(e);
             }
+        }
+    }
 
+    private static void createResources(Project project, VirtualFile rootDir) {
+        try {
+            VirtualFile resDir = rootDir.createChildDirectory(project, "res");
+            VirtualFile drawableDir = resDir.createChildDirectory(project, "drawable");
+            VirtualFile iconFile = drawableDir.createChildData(project, "icon.png");
+            InputStream iconStream = AndroidSupportConfigurable.class.getResourceAsStream("/icons/androidLarge.png");
             try {
-                file.createChildDirectory(project, "res");
-            } catch (IOException e) {
-                LOG.error(e);
+                byte[] bytes = FileUtil.adaptiveLoadBytes(iconStream);
+                iconFile.setBinaryContent(bytes);
             }
+            finally {
+                iconStream.close();
+            }
+        } catch (IOException e) {
+            LOG.error(e);
         }
     }
 
