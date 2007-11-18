@@ -12,15 +12,14 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.InvalidDataException;
-import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.openapi.util.*;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.refactoring.listeners.RefactoringElementListener;
 import org.jdom.Element;
 import org.jetbrains.android.dom.manifest.Manifest;
-import org.jetbrains.android.dom.manifest.Activity;
 import org.jetbrains.android.facet.AndroidFacet;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,8 +30,15 @@ import java.util.List;
  * @author yole
  */
 public class AndroidRunConfiguration extends ModuleBasedConfiguration {
+    public String ACTIVITY_CLASS = "";
+
     public AndroidRunConfiguration(String name, Project project, ConfigurationFactory factory) {
         super(name, new RunConfigurationModule(project, false), factory);
+    }
+
+    public void checkConfiguration() throws RuntimeConfigurationException {
+        final RunConfigurationModule configurationModule = getConfigurationModule();
+        configurationModule.checkModuleAndClassName(ACTIVITY_CLASS, "Activity class not specified");
     }
 
     public Collection<Module> getValidModules() {
@@ -49,11 +55,13 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration {
     public void readExternal(Element element) throws InvalidDataException {
         super.readExternal(element);
         readModule(element);
+        DefaultJDOMExternalizer.readExternal(this, element);
     }
 
     public void writeExternal(Element element) throws WriteExternalException {
         super.writeExternal(element);
         writeModule(element);
+        DefaultJDOMExternalizer.writeExternal(this, element);
     }
 
     protected ModuleBasedConfiguration createInstance() {
@@ -62,6 +70,22 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration {
 
     public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
         return new AndroidRunConfigurationEditor(getProject());
+    }
+
+    @Nullable
+    public RefactoringElementListener getRefactoringElementListener(PsiElement element) {
+        if (element instanceof PsiClass && Comparing.strEqual(((PsiClass) element).getQualifiedName(), ACTIVITY_CLASS, true)) {
+            return new RefactoringElementListener() {
+                public void elementMoved(PsiElement newElement) {
+                    ACTIVITY_CLASS = ((PsiClass) newElement).getQualifiedName();
+                }
+
+                public void elementRenamed(PsiElement newElement) {
+                    ACTIVITY_CLASS = ((PsiClass) newElement).getQualifiedName();
+                }
+            };
+        }
+        return null;
     }
 
     public RunProfileState getState(DataContext context,
@@ -87,7 +111,7 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration {
             }
 
             protected OSProcessHandler startProcess() throws ExecutionException {
-                final AndroidEmulatorProcessHandler processHandler = new AndroidEmulatorProcessHandler(createCommandLine(), module);
+                final AndroidEmulatorProcessHandler processHandler = new AndroidEmulatorProcessHandler(createCommandLine(), module, ACTIVITY_CLASS);
                 ProcessTerminatedListener.attach(processHandler);
                 return processHandler;
             }
@@ -97,11 +121,13 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration {
         return state;
     }
 
-    private class AndroidEmulatorProcessHandler extends OSProcessHandler {
+    private static class AndroidEmulatorProcessHandler extends OSProcessHandler {
         private AndroidFacet myFacet;
+        private String myActivityClass;
 
-        public AndroidEmulatorProcessHandler(GeneralCommandLine commandLine, final Module module) throws ExecutionException {
+        public AndroidEmulatorProcessHandler(GeneralCommandLine commandLine, final Module module, String activityClass) throws ExecutionException {
             super(commandLine.createProcess(), commandLine.getCommandLineString());
+            myActivityClass = activityClass;
             myFacet = AndroidFacet.getInstance(module);
 
             addProcessListener(new ProcessAdapter() {
@@ -135,17 +161,13 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration {
             Manifest manifest = myFacet.getManifest();
             if (manifest == null) return;
             String packageName = manifest.getPackage().getValue();
-            List<Activity> list = manifest.getApplication().getActivities();
-            if (list.isEmpty()) return;
-            PsiClass aClass = list.get(0).getActivityClass().getValue();
-            if (aClass == null) return;
-            String activityName = packageName + "/" + aClass.getQualifiedName();
+            String activityName = packageName + "/" + myActivityClass;
             runAdbProcess(myFacet.getSdkPath(), this, null,
                     "shell", "am", "start", "-n", activityName);
         }
     }
 
-    private void runAdbProcess(String sdkPath, final ProcessHandler textReceiver, final Runnable terminateRunnable, String... params) {
+    private static void runAdbProcess(String sdkPath, final ProcessHandler textReceiver, final Runnable terminateRunnable, String... params) {
         GeneralCommandLine cmdLine = new GeneralCommandLine();
         cmdLine.setExePath(new File(sdkPath, "tools/adb").getPath());
         cmdLine.addParameters(params);
