@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface Resources extends DomElement {
     @SubTagList("string")
-    List<ResourceString> getStrings();
+    List<ResourceElement> getStrings();
 }
