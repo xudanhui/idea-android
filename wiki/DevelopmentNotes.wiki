@@ -2,7 +2,8 @@
 
 == Short-Term Tasks ==
 
-  * Proper make support (ValidityState) for aapt, aidl and dex
+  * Proper make support (ValidityState) for aidl and dex
+  * Fix aidl compiler failure on ApiDemos project
   * Complete code insight for manifests
   * "Deploy on make" option (to avoid emulator restart when restarting app)
   * Select emulator startup options in run configuration settings
@@ -14,6 +15,7 @@
   * Debug support
   * Code insight for view definition files
   * Application level configurable for SDK paths
+  * Inspection to register activities/intents/etc. in manifest if they aren't currently registered.
 
 == Maybe Someday Tasks ==
 
@@ -27,3 +29,4 @@
   * Completion of tag and attribute names in .xml files is not available because schema is not available for Android XML formats, and DOM-based tag/attribute name completion seems to be available only in post-7.0 IntelliJ IDEA versions.
   * Xerces validation should be automatically disabled for Android XML files. The only pluggable way to do this in IDEA < 7.0.2 is to create an inspection profile programmatically, and to assign it to the res directory and manifest file.
   * How to implement rename and find usages for resource IDs?
+  * aapt source generating compiler is only correctly invoked for project compile scope. For module compile scope (used for run), the generate() method isn't called.
