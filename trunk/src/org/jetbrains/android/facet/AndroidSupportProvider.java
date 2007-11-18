@@ -5,13 +5,14 @@ import com.intellij.ide.util.newProjectWizard.FrameworkSupportProvider;
 import com.intellij.openapi.module.Module;
 import com.intellij.facet.FacetManager;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.android.util.AndroidBundle;
 
 /**
  * @author yole
  */
 public class AndroidSupportProvider extends FrameworkSupportProvider {
     public AndroidSupportProvider() {
-        super("Android", "Android");
+        super("Android", AndroidBundle.message("support.title"));
     }
 
     @NotNull
