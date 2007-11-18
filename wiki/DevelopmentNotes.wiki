@@ -26,5 +26,5 @@
 
   * Android SDK location is an application scope setting (local) which is currently stored in .iml files (shared). Should have application-level configurable with mapping from SDK version to installation path, and store only SDK version in .iml
   * Completion of tag and attribute names in .xml files is not available because schema is not available for Android XML formats, and DOM-based tag/attribute name completion seems to be available only in post-7.0 IntelliJ IDEA versions.
-  * Spurious "cannot find definition" highlighting in Android XML files.
+  * Xerces validation should be automatically disabled for Android XML files. The only pluggable way to do this in IDEA < 7.0.2 is to create an inspection profile programmatically, and to assign it to the res directory and manifest file.
   * How to implement rename and find usages for resource IDs?
