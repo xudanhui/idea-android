@@ -118,6 +118,7 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration {
         };
         TextConsoleBuilder consoleBuilder = TextConsoleBuilderFactory.getInstance().createBuilder(getProject());
         state.setConsoleBuilder(consoleBuilder);
+        state.setModulesToCompile(getModules());
         return state;
     }
 
