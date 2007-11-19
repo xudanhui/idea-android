@@ -147,7 +147,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         }
 
         public String getPath() {
-            return null;
+            return "R.java";
         }
 
         public ValidityState getValidityState() {
