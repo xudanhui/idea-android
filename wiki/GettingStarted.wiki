@@ -10,4 +10,8 @@ The plugin requires IntelliJ IDEA 7.0 or higher and is not compatible with earli
 
 Go to Settings | Plugins, select the "Android Support" plugin in the Available tab and press Install.
 
-http://idea-android.googlecode.com/files/installPlugin.png
+*Create New Project"
+
+Select "Create project from scratch" option. On the second page of the wizard, enter the name and location of your project.
+
+http://idea-android.googlecode.com/files/NewProjectName.png
