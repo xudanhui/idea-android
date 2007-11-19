@@ -1,17 +1,31 @@
 = Getting Started with IntelliJ IDEA and Android Development =
 
-*Download IntelliJ IDEA*
+===Download IntelliJ IDEA===
 
 If you don't already have IntelliJ IDEA installed, you can download a 30-day evaluation version from http://www.jetbrains.com/idea/download/ 
 
 The plugin requires IntelliJ IDEA 7.0 or higher and is not compatible with earlier versions of IntelliJ IDEA.
 
-*Install Plugin*
+===Install Plugin===
 
 Go to Settings | Plugins, select the "Android Support" plugin in the Available tab and press Install.
 
-*Create New Project"
+===Create New Project===
 
 Select "Create project from scratch" option. On the second page of the wizard, enter the name and location of your project.
 
 http://idea-android.googlecode.com/files/NewProjectName.png
+
+Accept the default source root option. On the "Technologies" page, select Android and enter the path to your Android SDK installation.
+
+http://idea-android.googlecode.com/files/androidSupport.png
+
+If you are prompted to select a JDK, select the installation home of a Java 1.5 or 1.6 JDK (no JRE).
+
+===Create Activity===
+
+Select the src directory in the project view, press Alt-Ins (Ctrl-Enter on a Mac) to invoke the "New" menu and select "Package". Enter the name of the package.
+
+Select the package, press Alt-Ins again and select "Activity" from the menu.
+
+http://idea-android.googlecode.com/files/androidNewActivity.png
