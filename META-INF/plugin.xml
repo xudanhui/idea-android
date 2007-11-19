@@ -1,10 +1,10 @@
 <!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
-<idea-plugin>
+<idea-plugin version="2" url="http://idea-android.googlecode.com/">
     <name>Android Support</name>
     <description>Supports development of Open Handset Alliance Android applications with IntelliJ IDEA</description>
-    <version>0.1</version>
+    <version>0.1.1</version>
     <vendor logo="/icons/android.png">JetBrains</vendor>
-    <idea-version since-build="7361"/>
+    <idea-version since-build="7361" until-build="7999"/>
     <application-components>
         <component>
             <implementation-class>org.jetbrains.android.AndroidManager</implementation-class>
