@@ -153,7 +153,12 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
         myPanel = new JPanel() {
             public Dimension getMinimumSize() {
                 Dimension minimumSize = super.getMinimumSize();
-                return new Dimension(500, minimumSize.height);
+                return new Dimension(400, minimumSize.height);
+            }
+
+            public Dimension getPreferredSize() {
+                Dimension preferredSize = super.getPreferredSize();
+                return new Dimension(400, preferredSize.height);
             }
         };
     }
