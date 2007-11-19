@@ -428,7 +428,7 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/idea-android.iml" filepath="$PROJECT_DIR$/idea-android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android.iml" filepath="$PROJECT_DIR$/android.iml" />
     </modules>
   </component>
   <component name="ProjectRootConfigurable.UI">
@@ -441,7 +441,7 @@
   </component>
   <component name="ProjectRunConfigurationManager">
     <configuration default="false" name="Plugin" type="#org.jetbrains.idea.devkit.run.PluginConfigurationType" factoryName="Plugin">
-      <module name="idea-android" />
+      <module name="android" />
       <option name="VM_PARAMETERS" value=" -Xms32m -Xmx128m -XX:MaxPermSize=120m -ea -agentlib:yjpagent=sessionname=IntelliJIDEA" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <log_file path="/home/aefimov/.IntelliJIdea70/system/plugins-sandbox/system/log/idea.log" checked="false" skipped="true" show_all="false" alias="IDEA LOG" />
