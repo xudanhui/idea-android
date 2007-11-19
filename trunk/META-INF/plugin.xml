@@ -2,7 +2,7 @@
 <idea-plugin>
     <name>Android Support</name>
     <description>Supports development of Open Handset Alliance Android applications with IntelliJ IDEA</description>
-    <version>1.0</version>
+    <version>0.1</version>
     <vendor logo="/icons/android.png">JetBrains</vendor>
     <idea-version since-build="7361"/>
     <application-components>
