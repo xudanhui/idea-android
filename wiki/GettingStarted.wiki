@@ -9,3 +9,5 @@ The plugin requires IntelliJ IDEA 7.0 or higher and is not compatible with earli
 *Install Plugin*
 
 Go to Settings | Plugins, select the "Android Support" plugin in the Available tab and press Install.
+
+http://idea-android.googlecode.com/files/installPlugin.png
