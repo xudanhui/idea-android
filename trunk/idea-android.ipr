@@ -73,7 +73,7 @@
       <entry name="?*.html" />
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
-      <entry name="?*.xml.ft" />
+      <entry name="?*.ft" />
     </wildcardResourcePatterns>
   </component>
   <component name="CppTools.Loader" reportImplicitCastToBool="false" version="1" />
@@ -172,80 +172,10 @@
         <option name="myName" value="Project Default" />
         <option name="myLocal" value="false" />
         <inspection_tool class="LossyEncoding" level="WARNING" enabled="true" />
-        <inspection_tool class="QuirksModeInspectionTool" level="WARNING" enabled="true">
-          <option name="IE50" value="false" />
-          <option name="IE55" value="false" />
-          <option name="IE6" value="true" />
-          <option name="IE7" value="true" />
-          <option name="IE_MAC" value="false" />
-          <option name="MOZILLA" value="true" />
-          <option name="OPERA7" value="false" />
-          <option name="OPERA8" value="false" />
-          <option name="OPERA85" value="true" />
-          <option name="OPERA9" value="true" />
-          <option name="SAFARI" value="true" />
-        </inspection_tool>
         <inspection_tool class="SuspiciousIndentAfterControlStatement" level="WARNING" enabled="true" />
       </profile>
     </profiles>
     <list size="0" />
-  </component>
-  <component name="IntelliJadProjectConfigComponent">
-    <config>
-      <a type="boolean">false</a>
-      <af type="boolean">false</af>
-      <always-exclude-recursively type="boolean" />
-      <b type="boolean">false</b>
-      <clear type="boolean">false</clear>
-      <clear-and-close-console-on-success type="boolean" />
-      <create-output-directory type="boolean" />
-      <d type="string" />
-      <dead type="boolean">false</dead>
-      <decompile-on-navigation type="string">Always</decompile-on-navigation>
-      <decompile-to-memory type="boolean">true</decompile-to-memory>
-      <dis type="boolean">false</dis>
-      <exclusion-table-model type="table-model" model-class="net.stevechaloner.intellijad.config.ExclusionTableModel" content-types="string,boolean,boolean" />
-      <f type="boolean">false</f>
-      <ff type="boolean">false</ff>
-      <i type="boolean">false</i>
-      <indentation type="integer">4</indentation>
-      <jad-path type="string" />
-      <l type="integer">64</l>
-      <lnc type="boolean">false</lnc>
-      <lradix type="integer">10</lradix>
-      <nl type="boolean">false</nl>
-      <nocast type="boolean">false</nocast>
-      <noclass type="boolean">false</noclass>
-      <nocode type="boolean">false</nocode>
-      <noconv type="boolean">false</noconv>
-      <noctor type="boolean">false</noctor>
-      <nodos type="boolean">false</nodos>
-      <nofd type="boolean">false</nofd>
-      <noinner type="boolean">false</noinner>
-      <nolvt type="boolean">false</nolvt>
-      <nonlb type="boolean">false</nonlb>
-      <o type="boolean">false</o>
-      <pa type="string" />
-      <pc type="string">_cls</pc>
-      <pe type="string">_ex</pe>
-      <pf type="string">_fld</pf>
-      <pl type="string">_lcl</pl>
-      <pm type="string">_mth</pm>
-      <pp type="string">_prm</pp>
-      <pv type="integer">3</pv>
-      <r type="boolean">false</r>
-      <radix type="integer">10</radix>
-      <read-only type="boolean" />
-      <reformat-style type="string">Preferred-Style</reformat-style>
-      <s type="string">java</s>
-      <safe type="boolean">false</safe>
-      <sort type="boolean" />
-      <space type="boolean">false</space>
-      <stat type="boolean">false</stat>
-      <t type="boolean">false</t>
-      <use-project-specific-settings type="boolean" />
-      <v type="boolean">false</v>
-    </config>
   </component>
   <component name="JavacSettings">
     <option name="DEBUGGING_INFO" value="true" />
@@ -436,7 +366,7 @@
       <SplitterProportionsDataImpl />
     </option>
   </component>
-  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="idea" project-jdk-type="IDEA JDK">
+  <component name="ProjectRootManager" version="2" assert-keyword="true" jdk-15="true" project-jdk-name="IDEA 7531" project-jdk-type="IDEA JDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="ProjectRunConfigurationManager">
@@ -444,16 +374,18 @@
       <module name="android" />
       <option name="VM_PARAMETERS" value=" -Xms32m -Xmx128m -XX:MaxPermSize=120m -ea -agentlib:yjpagent=sessionname=IntelliJIDEA" />
       <option name="PROGRAM_PARAMETERS" value="" />
-      <log_file path="/home/aefimov/.IntelliJIdea70/system/plugins-sandbox/system/log/idea.log" checked="false" skipped="true" show_all="false" alias="IDEA LOG" />
+      <log_file path="C:/Documents and Settings/yole/.IntelliJIdea70/system/plugins-sandbox/system/log/idea.log" checked="false" skipped="true" show_all="false" alias="IDEA LOG" />
       <RunnerSettings RunnerId="Debug">
         <option name="DEBUG_PORT" value="3110" />
         <option name="TRANSPORT" value="0" />
         <option name="LOCAL" value="true" />
       </RunnerSettings>
       <RunnerSettings RunnerId="Profile ">
-        <option name="myExternalizedOptions" value="&#10;snapshots-dir=&#10;" />
+        <option name="myExternalizedOptions" value="&#13;&#10;snapshots-dir=&#13;&#10;" />
       </RunnerSettings>
+      <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
       <method>
         <option name="Make" value="true" />
       </method>
@@ -573,6 +505,9 @@
   </component>
   <component name="com.intellij.profile.ui.ErrorOptionsConfigurable" proportions="" version="1">
     <option name="myLastEditedConfigurable" />
+  </component>
+  <component name="uidesigner-configuration">
+    <option name="COPY_FORMS_RUNTIME_TO_OUTPUT" value="false" />
   </component>
 </project>
 
