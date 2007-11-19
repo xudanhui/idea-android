@@ -1,0 +1,11 @@
+= Getting Started with IntelliJ IDEA and Android Development =
+
+*Download IntelliJ IDEA*
+
+If you don't already have IntelliJ IDEA installed, you can download a 30-day evaluation version from http://www.jetbrains.com/idea/download/ 
+
+The plugin requires IntelliJ IDEA 7.0 or higher and is not compatible with earlier versions of IntelliJ IDEA.
+
+*Install Plugin*
+
+Go to Settings | Plugins, select the "Android Support" plugin in the Available tab and press Install.
