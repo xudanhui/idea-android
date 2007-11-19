@@ -61,3 +61,15 @@ http://idea-android.googlecode.com/files/androidEmulator.png
 If an error "Cannot start activity..." is printed in the console window, close the emulator and try again (this is a known issue with the Android emulator).
 
 Note that the initial release of the plugin does not support debugging Android applications. Debugging support will be added in a future release.
+
+===Cool Stuff to Try===
+
+(a.k.a. why we're better than ADT :) )
+
+In AndroidManifest.xml, put the cursor on @drawable/icon and press Ctrl-Shift-I.
+
+http://idea-android.googlecode.com/files/iconImpl.png
+
+Try pressing Ctrl-B and Ctrl-Space in a few places to explore the navigation completion options available. Even in the initial release of the plugin, a few things are supported. 
+
+http://idea-android.googlecode.com/files/activityCompletion.png
