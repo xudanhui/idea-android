@@ -73,6 +73,7 @@
       <entry name="?*.html" />
       <entry name="?*.dtd" />
       <entry name="?*.tld" />
+      <entry name="?*.xml.ft" />
     </wildcardResourcePatterns>
   </component>
   <component name="CppTools.Loader" reportImplicitCastToBool="false" version="1" />
