@@ -10,8 +10,8 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.*;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.android.AndroidManager;
-import org.jetbrains.android.dom.manifest.*;
 import org.jetbrains.android.dom.manifest.Action;
+import org.jetbrains.android.dom.manifest.*;
 import org.jetbrains.android.dom.resources.ResourceValue;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +34,7 @@ public class CreateActivityAction extends CreateElementActionBase {
 
     public void update(AnActionEvent e) {
         Module module = e.getData(DataKeys.MODULE);
-        e.getPresentation().setVisible(AndroidFacet.getInstance(module) != null);
+        e.getPresentation().setVisible(module != null && AndroidFacet.getInstance(module) != null);
     }
 
     @NotNull
@@ -67,7 +67,7 @@ public class CreateActivityAction extends CreateElementActionBase {
             assert facet != null;
             registerActivity(aClass, directory.getPackage(), facet);
         }
-        return new PsiElement[] { aClass };
+        return new PsiElement[]{aClass};
     }
 
     private static boolean isFirstActivity(PsiDirectory directory) {
