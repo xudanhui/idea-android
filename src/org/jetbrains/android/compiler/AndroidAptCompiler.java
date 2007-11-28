@@ -188,11 +188,14 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
                     Manifest manifest = facet.getManifest();
                     VirtualFile resourcesDir = facet.getResourcesDir();
                     if (manifest != null && resourcesDir != null) {
-                        ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-                        VirtualFile[] sourceRoots = rootManager.getSourceRoots();
-                        for (VirtualFile sourceRoot : sourceRoots) {
-                            items.add(new AptGenerationItem(module, resourcesDir.getParent().getPath(), resourcesDir.getPath(),
-                                    sourceRoot.getPath(), facet.getSdkPath(), manifest.getPackage().getValue()));
+                        String packageName = manifest.getPackage().getValue();
+                        if (packageName != null) {
+                            ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
+                            VirtualFile[] sourceRoots = rootManager.getSourceRoots();
+                            for (VirtualFile sourceRoot : sourceRoots) {
+                                items.add(new AptGenerationItem(module, resourcesDir.getParent().getPath(), resourcesDir.getPath(),
+                                        sourceRoot.getPath(), facet.getSdkPath(), packageName));
+                            }
                         }
                     }
                 }
