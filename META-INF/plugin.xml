@@ -38,6 +38,7 @@
         <dom.fileDescription implementation="org.jetbrains.android.dom.manifest.ManifestDomFileDescription"/>
         <dom.fileDescription implementation="org.jetbrains.android.dom.resources.ResourcesDomFileDescription"/>
         <dom.fileDescription implementation="org.jetbrains.android.dom.layout.LayoutDomFileDescription"/>
+        <dom.extender domClass="org.jetbrains.android.dom.AndroidDomElement" extenderClass="org.jetbrains.android.dom.AndroidDomExtender"/>
         <frameworkSupport implementation="org.jetbrains.android.facet.AndroidSupportProvider"/>
         <configurationProducer implementation="org.jetbrains.android.run.AndroidConfigurationProducer"/>
     </extensions>

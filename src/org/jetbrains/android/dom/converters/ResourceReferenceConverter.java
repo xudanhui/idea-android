@@ -22,17 +22,27 @@ import java.util.List;
  * @author yole
  */
 public class ResourceReferenceConverter extends ResolvingConverter<ResourceValue> implements CustomReferenceConverter<ResourceValue> {
+    private String myResourceType = null;
+
+    public ResourceReferenceConverter() {
+    }
+
+    public ResourceReferenceConverter(String resourceType) {
+        myResourceType = resourceType;
+    }
+
     @NotNull
     public Collection<? extends ResourceValue> getVariants(ConvertContext context) {
         List<ResourceValue> result = new ArrayList<ResourceValue>();
         ResourceType resourceType = context.getInvocationElement().getAnnotation(ResourceType.class);
+        String resourceTypeValue = resourceType != null ? resourceType.value() : myResourceType;
         AndroidFacet facet = AndroidFacet.getInstance(context.getModule());
-        if (facet != null && resourceType != null) {
-            List<ResourceElement> elements = facet.getResourcesOfType(resourceType.value());
+        if (facet != null && resourceTypeValue != null) {
+            List<ResourceElement> elements = facet.getResourcesOfType(resourceTypeValue);
             for(ResourceElement element: elements) {
                 String name = element.getName().getValue();
                 if (name != null) {
-                    result.add(ResourceValue.referenceTo('@', resourceType.value(), name));
+                    result.add(ResourceValue.referenceTo('@', resourceTypeValue, name));
                 }
             }
         }
