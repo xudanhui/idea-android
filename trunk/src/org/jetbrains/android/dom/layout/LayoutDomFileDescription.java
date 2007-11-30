@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.android.facet.AndroidFacet;
+import org.jetbrains.android.AndroidManager;
 
 /**
  * @author yole
@@ -18,6 +19,10 @@ public class LayoutDomFileDescription extends DomFileDescription<LayoutElement> 
 
     public boolean acceptsOtherRootTagNames() {
         return true;
+    }
+
+    protected void initializeFileDescription() {
+        registerNamespacePolicy(AndroidManager.NAMESPACE_KEY, AndroidManager.NAMESPACE);
     }
 
     public boolean isMyFile(@NotNull XmlFile file, @Nullable Module module) {
