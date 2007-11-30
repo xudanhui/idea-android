@@ -16,7 +16,7 @@ public class ManifestDomFileDescription extends DomFileDescription<Manifest> {
     }
 
     protected void initializeFileDescription() {
-        registerNamespacePolicy("android", "http://schemas.android.com/apk/res/android");
+        registerNamespacePolicy(AndroidManager.NAMESPACE_KEY, AndroidManager.NAMESPACE);
     }
 
     public boolean isMyFile(@NotNull XmlFile file, @Nullable Module module) {

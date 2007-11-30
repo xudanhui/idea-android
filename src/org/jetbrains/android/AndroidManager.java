@@ -9,6 +9,7 @@ import com.intellij.openapi.components.ApplicationComponent;
 import com.intellij.openapi.fileTypes.FileTypeManager;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.util.IconLoader;
+import org.jetbrains.android.dom.layout.LayoutDomInspection;
 import org.jetbrains.android.dom.manifest.ManifestDomInspection;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.fileTypes.AndroidIdlFileType;
@@ -25,6 +26,8 @@ public class AndroidManager implements ApplicationComponent, InspectionToolProvi
     public static final String CLASSES_FILE_NAME = "classes.dex";
 
     public static final Icon ANDROID_ICON = IconLoader.getIcon("/icons/android.png");
+    public static final String NAMESPACE_KEY = "android";
+    public static final String NAMESPACE = "http://schemas.android.com/apk/res/android";
 
     @NonNls
     @NotNull
@@ -42,7 +45,8 @@ public class AndroidManager implements ApplicationComponent, InspectionToolProvi
 
     public Class[] getInspectionClasses() {
         return new Class[]{
-                ManifestDomInspection.class
+                ManifestDomInspection.class,
+                LayoutDomInspection.class
         };
     }
 

@@ -6,11 +6,12 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.util.PsiModificationTracker;
+import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.xml.Converter;
 import com.intellij.util.xml.XmlName;
 import com.intellij.util.xml.reflect.DomExtender;
-import com.intellij.util.xml.reflect.DomExtensionsRegistrar;
 import com.intellij.util.xml.reflect.DomExtension;
+import com.intellij.util.xml.reflect.DomExtensionsRegistrar;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
 import org.jetbrains.android.dom.layout.LayoutElement;
 import org.jetbrains.android.dom.resources.ResourceValue;
@@ -36,21 +37,24 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
         }
         */
         if (androidDomElement instanceof LayoutElement) {
-            String name = androidDomElement.getXmlElementName();
-            Collection<String> attributes = getAttributeList(androidDomElement.getManager().getProject(), name);
-            for(String attr: attributes) {
-                AndroidAttributeDescriptor descriptor = ourDescriptors.get(attr);
-                if (descriptor != null) {
-                    XmlName xmlName = new XmlName(attr, "android");
-                    DomExtension extension = registrar.registerAttributeChildExtension(xmlName, descriptor.myValueClass);
-                    extension.setConverter(descriptor.myConverter);
+            XmlTag tag = androidDomElement.getXmlTag();
+            if (tag != null) {
+                String name = tag.getName();
+                Collection<String> attributes = getAttributeList(androidDomElement.getManager().getProject(), name);
+                for(String attr: attributes) {
+                    AndroidAttributeDescriptor descriptor = ourDescriptors.get(attr);
+                    if (descriptor != null) {
+                        XmlName xmlName = new XmlName(attr, "android");
+                        DomExtension extension = registrar.registerGenericAttributeValueChildExtension(xmlName, descriptor.myValueClass);
+                        extension.setConverter(descriptor.myConverter);
+                    }
                 }
             }
         }
         return new Object[] {PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT };
     }
 
-    private Collection<String> getAttributeList(final Project project, String name) {
+    private static Collection<String> getAttributeList(final Project project, String name) {
         Collection<String> result = new HashSet<String>();
         PsiManager manager = PsiManager.getInstance(project);
         PsiClass styleableClass = manager.findClass("android.R.styleable", project.getAllScope());
