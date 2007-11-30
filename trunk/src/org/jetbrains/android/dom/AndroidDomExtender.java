@@ -15,6 +15,7 @@ import com.intellij.util.xml.reflect.DomExtensionsRegistrar;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
 import org.jetbrains.android.dom.layout.LayoutElement;
 import org.jetbrains.android.dom.resources.ResourceValue;
+import org.jetbrains.android.AndroidManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -44,7 +45,7 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
                 for(String attr: attributes) {
                     AndroidAttributeDescriptor descriptor = ourDescriptors.get(attr);
                     if (descriptor != null) {
-                        XmlName xmlName = new XmlName(attr, "android");
+                        XmlName xmlName = new XmlName(attr, AndroidManager.NAMESPACE_KEY);
                         DomExtension extension = registrar.registerGenericAttributeValueChildExtension(xmlName, descriptor.myValueClass);
                         extension.setConverter(descriptor.myConverter);
                     }
