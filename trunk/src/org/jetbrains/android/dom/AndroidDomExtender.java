@@ -5,6 +5,7 @@ import com.intellij.psi.CommonClassNames;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.xml.Converter;
@@ -12,16 +13,14 @@ import com.intellij.util.xml.XmlName;
 import com.intellij.util.xml.reflect.DomExtender;
 import com.intellij.util.xml.reflect.DomExtension;
 import com.intellij.util.xml.reflect.DomExtensionsRegistrar;
+import com.intellij.util.Processor;
+import org.jetbrains.android.AndroidManager;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
 import org.jetbrains.android.dom.layout.LayoutElement;
 import org.jetbrains.android.dom.resources.ResourceValue;
-import org.jetbrains.android.AndroidManager;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,6 +28,8 @@ import java.util.regex.Pattern;
  * @author yole
  */
 public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
+    private List<String> myViewClasses;
+
     public Object[] registerExtensions(@NotNull AndroidDomElement androidDomElement, @NotNull DomExtensionsRegistrar registrar) {
         /*
         if (androidDomElement instanceof Activity) {
@@ -49,6 +50,10 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
                         DomExtension extension = registrar.registerGenericAttributeValueChildExtension(xmlName, descriptor.myValueClass);
                         extension.setConverter(descriptor.myConverter);
                     }
+                }
+                List<String> viewClasses = getViewClasses(androidDomElement.getManager().getProject());
+                for(String s: viewClasses) {
+                    registrar.registerCollectionChildrenExtension(new XmlName(s), LayoutElement.class);
                 }
             }
         }
@@ -83,6 +88,23 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
                 result.add(matcher.group(2));
             }
         }
+    }
+
+    private List<String> getViewClasses(Project project) {
+        if (myViewClasses == null) {
+            myViewClasses = new ArrayList<String>();
+            PsiClass viewClass = PsiManager.getInstance(project).findClass("android.view.View", project.getAllScope());
+            if (viewClass != null) {
+                myViewClasses.add(viewClass.getName());
+                ClassInheritorsSearch.search(viewClass).forEach(new Processor<PsiClass>() {
+                    public boolean process(PsiClass psiClass) {
+                        myViewClasses.add(psiClass.getName());
+                        return true;
+                    }
+                });
+            }
+        }
+        return myViewClasses;
     }
 
     private static class AndroidAttributeDescriptor {
