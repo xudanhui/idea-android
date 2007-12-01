@@ -90,7 +90,7 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
         }
     }
 
-    private List<String> getViewClasses(Project project) {
+    private synchronized List<String> getViewClasses(Project project) {
         if (myViewClasses == null) {
             myViewClasses = new ArrayList<String>();
             PsiClass viewClass = PsiManager.getInstance(project).findClass("android.view.View", project.getAllScope());
