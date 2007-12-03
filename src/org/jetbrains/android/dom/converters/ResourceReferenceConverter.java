@@ -2,6 +2,7 @@ package org.jetbrains.android.dom.converters;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
+import com.intellij.psi.PsiFile;
 import com.intellij.util.xml.ConvertContext;
 import com.intellij.util.xml.CustomReferenceConverter;
 import com.intellij.util.xml.GenericDomValue;
@@ -45,6 +46,11 @@ public class ResourceReferenceConverter extends ResolvingConverter<ResourceValue
                     result.add(ResourceValue.referenceTo('@', resourceTypeValue, name));
                 }
             }
+
+            List<String> files = facet.getResourceFileNames(resourceTypeValue);
+            for(String file: files) {
+                result.add(ResourceValue.referenceTo('@', resourceTypeValue, file));
+            }
         }
         return result;
     }
@@ -68,6 +74,12 @@ public class ResourceReferenceConverter extends ResolvingConverter<ResourceValue
             for(ResourceElement rs: list) {
                 if (ref.getResourceName().equals(rs.getName().getValue())) {
                     target = rs.getName();
+                }
+            }
+            if (target == null) {
+                PsiFile file = facet.findResourceFile(resType, ref.getResourceName());
+                if (file != null) {
+                    return new PsiReference[] { new FileResourceReference(value, file) };
                 }
             }
             return new PsiReference[] { new ResourceReference(value, target)};

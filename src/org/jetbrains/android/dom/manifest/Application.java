@@ -5,7 +5,6 @@ import com.intellij.util.xml.DomElement;
 import org.jetbrains.android.dom.AndroidAttributeValue;
 import org.jetbrains.android.dom.ResourceType;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
-import org.jetbrains.android.dom.converters.FileResourceReferenceConverter;
 import org.jetbrains.android.dom.resources.ResourceValue;
 
 import java.util.List;
@@ -25,7 +24,7 @@ public interface Application extends DomElement {
     @ResourceType("string")
     AndroidAttributeValue<ResourceValue> getLabel();
 
-    @Convert(FileResourceReferenceConverter.class)
+    @Convert(ResourceReferenceConverter.class)
     @ResourceType("drawable")
     AndroidAttributeValue<ResourceValue> getIcon();
 }
