@@ -11,4 +11,7 @@ import java.util.List;
 public interface Resources extends DomElement {
     @SubTagList("string")
     List<ResourceElement> getStrings();
+    List<ResourceElement> getDrawables();
+    List<ResourceElement> getColors();
+    List<ResourceElement> getStyles();
 }

@@ -125,5 +125,7 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
 
     static {
         registerDescriptor("text", ResourceValue.class, new ResourceReferenceConverter("string"));
+        registerDescriptor("background", ResourceValue.class, new ResourceReferenceConverter("drawable"));
+        registerDescriptor("textColor", ResourceValue.class, new ResourceReferenceConverter("color"));
     }
 }

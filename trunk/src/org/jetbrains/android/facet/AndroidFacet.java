@@ -126,6 +126,15 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
             if (resType.equals("string")) {
                 result.addAll(res.getStrings());
             }
+            else if (resType.equals("drawable")) {
+                result.addAll(res.getDrawables());
+            }
+            else if (resType.equals("color")) {
+                result.addAll(res.getColors());
+            }
+            else if (resType.equals("style")) {
+                result.addAll(res.getStyles());
+            }
         }
         return result;
     }
