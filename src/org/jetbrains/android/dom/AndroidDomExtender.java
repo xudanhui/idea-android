@@ -8,14 +8,16 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.Processor;
 import com.intellij.util.xml.Converter;
 import com.intellij.util.xml.XmlName;
 import com.intellij.util.xml.reflect.DomExtender;
 import com.intellij.util.xml.reflect.DomExtension;
 import com.intellij.util.xml.reflect.DomExtensionsRegistrar;
-import com.intellij.util.Processor;
 import org.jetbrains.android.AndroidManager;
+import org.jetbrains.android.dom.converters.PsiEnumConverter;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
+import org.jetbrains.android.dom.converters.StaticEnumConverter;
 import org.jetbrains.android.dom.layout.LayoutElement;
 import org.jetbrains.android.dom.resources.ResourceValue;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +50,9 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
                     if (descriptor != null) {
                         XmlName xmlName = new XmlName(attr, AndroidManager.NAMESPACE_KEY);
                         DomExtension extension = registrar.registerGenericAttributeValueChildExtension(xmlName, descriptor.myValueClass);
-                        extension.setConverter(descriptor.myConverter);
+                        if (descriptor.myConverter != null) {
+                            extension.setConverter(descriptor.myConverter);
+                        }
                     }
                 }
                 List<String> viewClasses = getViewClasses(androidDomElement.getManager().getProject());
@@ -124,8 +128,13 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
     }
 
     static {
-        registerDescriptor("text", ResourceValue.class, new ResourceReferenceConverter("string"));
         registerDescriptor("background", ResourceValue.class, new ResourceReferenceConverter("drawable"));
+        registerDescriptor("capitalize", String.class, new PsiEnumConverter("android.text.method.TextInputMethod.Capitalize"));
+        registerDescriptor("orientation", String.class, new StaticEnumConverter("horizontal", "vertical"));
+        registerDescriptor("password", boolean.class, null);
+        registerDescriptor("src", ResourceValue.class, new ResourceReferenceConverter("drawable"));
+        registerDescriptor("text", ResourceValue.class, new ResourceReferenceConverter("string"));
         registerDescriptor("textColor", ResourceValue.class, new ResourceReferenceConverter("color"));
+        registerDescriptor("textAlign", String.class, new StaticEnumConverter("start", "center", "end"));
     }
 }
