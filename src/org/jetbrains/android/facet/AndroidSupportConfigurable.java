@@ -2,7 +2,6 @@ package org.jetbrains.android.facet;
 
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
-import com.intellij.facet.impl.FacetUtil;
 import com.intellij.ide.fileTemplates.FileTemplate;
 import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.ide.fileTemplates.FileTemplateUtil;
@@ -12,6 +11,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.JavadocOrderRootType;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.OrderEntry;
 import com.intellij.openapi.roots.OrderRootType;
@@ -55,8 +55,9 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
     }
 
     public void addSupport(Module module, ModifiableRootModel modifiableRootModel, @Nullable Library library) {
-        ModifiableFacetModel model = FacetManager.getInstance(module).createModifiableModel();
-        AndroidFacet facet = FacetUtil.createFacet(AndroidFacet.ourFacetType, module, null);
+        final FacetManager facetManager = FacetManager.getInstance(module);
+        ModifiableFacetModel model = facetManager.createModifiableModel();
+        AndroidFacet facet = facetManager.createFacet(AndroidFacet.ourFacetType, "Android", null);
         facet.getConfiguration().SDK_PATH = mySdkPathField.getText();
         model.addFacet(facet);
         model.commit();
@@ -102,7 +103,7 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
         VirtualFile androidRoot = JarFileSystem.getInstance().findFileByPath(androidJar.getPath() + JarFileSystem.JAR_SEPARATOR);
         androidLibraryModel.addRoot(androidRoot, OrderRootType.CLASSES);
         if (javadocDir != null) {
-            androidLibraryModel.addRoot(javadocDir, OrderRootType.JAVADOC);
+            androidLibraryModel.addRoot(javadocDir, JavadocOrderRootType.getInstance());
         }
         androidLibraryModel.commit();
 

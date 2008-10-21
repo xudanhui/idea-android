@@ -7,6 +7,8 @@ import com.intellij.facet.autodetecting.FacetDetectorRegistry;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileFilter;
 import org.jetbrains.android.AndroidManager;
@@ -34,6 +36,10 @@ public class AndroidFacetType extends FacetType<AndroidFacet, AndroidFacetConfig
 
     public AndroidFacet createFacet(@NotNull Module module, String name, @NotNull AndroidFacetConfiguration configuration, @Nullable Facet underlyingFacet) {
         return new AndroidFacet(module, name, configuration);
+    }
+
+    public boolean isSuitableModuleType(ModuleType moduleType) {
+        return moduleType instanceof JavaModuleType;
     }
 
     public void registerDetectors(FacetDetectorRegistry<AndroidFacetConfiguration> detectorRegistry) {

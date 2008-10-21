@@ -16,7 +16,7 @@ import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -93,7 +93,7 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
         return true;
     }
 
-    public ValidityState createValidityState(DataInputStream is) throws IOException {
+    public ValidityState createValidityState(DataInput is) throws IOException {
         return new ResourcesValidityState(is);
     }
 

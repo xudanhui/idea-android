@@ -4,10 +4,11 @@ import com.intellij.ide.actions.CreateElementActionBase;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.psi.*;
+import com.intellij.psi.search.ProjectScope;
 import com.intellij.util.IncorrectOperationException;
 import org.jetbrains.android.AndroidManager;
 import org.jetbrains.android.dom.manifest.Action;
@@ -50,28 +51,31 @@ public class CreateActivityAction extends CreateElementActionBase {
     }
 
     protected void checkBeforeCreate(String newName, PsiDirectory directory) throws IncorrectOperationException {
-        directory.checkCreateClass(newName);
+        JavaDirectoryService.getInstance().checkCreateClass(directory, newName);
     }
 
     @NotNull
     protected PsiElement[] create(String newName, PsiDirectory directory) throws Exception {
-        PsiClass aClass = directory.createClass(newName);
-        PsiClass activityClass = directory.getManager().findClass("android.app.Activity", directory.getProject().getAllScope());
+        JavaDirectoryService dirService = JavaDirectoryService.getInstance();
+        PsiClass aClass = dirService.createClass(directory, newName);
+        Project project = directory.getProject();
+        JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
+        PsiClass activityClass = facade.findClass("android.app.Activity", ProjectScope.getAllScope(project));
         if (activityClass != null) {
-            PsiJavaCodeReferenceElement activityReference = directory.getManager().getElementFactory().createClassReferenceElement(activityClass);
+            PsiJavaCodeReferenceElement activityReference = facade.getElementFactory().createClassReferenceElement(activityClass);
             aClass.getExtendsList().add(activityReference);
         }
-        Module module = VfsUtil.getModuleForFile(directory.getProject(), directory.getVirtualFile());
+        Module module = ModuleUtil.findModuleForFile(directory.getVirtualFile(), project);
         if (module != null) {
             AndroidFacet facet = AndroidFacet.getInstance(module);
             assert facet != null;
-            registerActivity(aClass, directory.getPackage(), facet);
+            registerActivity(aClass, dirService.getPackage(directory), facet);
         }
         return new PsiElement[]{aClass};
     }
 
     private static boolean isFirstActivity(PsiDirectory directory) {
-        Module module = VfsUtil.getModuleForFile(directory.getProject(), directory.getVirtualFile());
+        Module module = ModuleUtil.findModuleForFile(directory.getVirtualFile(), directory.getProject());
         if (module == null) return false;
         AndroidFacet facet = AndroidFacet.getInstance(module);
         Manifest manifest = facet.getManifest();

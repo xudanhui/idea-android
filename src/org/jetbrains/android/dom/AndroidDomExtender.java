@@ -1,12 +1,9 @@
 package org.jetbrains.android.dom;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.CommonClassNames;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiManager;
+import com.intellij.psi.*;
+import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
-import com.intellij.psi.util.PsiModificationTracker;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.Processor;
 import com.intellij.util.xml.Converter;
@@ -32,7 +29,7 @@ import java.util.regex.Pattern;
 public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
     private List<String> myViewClasses;
 
-    public Object[] registerExtensions(@NotNull AndroidDomElement androidDomElement, @NotNull DomExtensionsRegistrar registrar) {
+    public void registerExtensions(@NotNull AndroidDomElement androidDomElement, @NotNull DomExtensionsRegistrar registrar) {
         /*
         if (androidDomElement instanceof Activity) {
             DomExtension extension = registrar.registerAttributeChildExtension(new XmlName("label", "android"),
@@ -61,16 +58,17 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
                 }
             }
         }
-        return new Object[] {PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT };
+
+        // TODO[yole] return new Object[] {PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT };
     }
 
     private static Collection<String> getAttributeList(final Project project, String name) {
         Collection<String> result = new HashSet<String>();
-        PsiManager manager = PsiManager.getInstance(project);
-        PsiClass styleableClass = manager.findClass("android.R.styleable", project.getAllScope());
+        final JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
+        PsiClass styleableClass = facade.findClass("android.R.styleable", ProjectScope.getAllScope(project));
         if (styleableClass != null) {
             collectAttributesForClass(name, result, styleableClass);
-            PsiClass layoutClass = manager.findClass("android.widget." + name, project.getAllScope());
+            PsiClass layoutClass = facade.findClass("android.widget." + name, ProjectScope.getAllScope(project));
             if (layoutClass != null) {
                 layoutClass = layoutClass.getSuperClass();
                 while(layoutClass != null &&
@@ -97,7 +95,8 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
     private synchronized List<String> getViewClasses(Project project) {
         if (myViewClasses == null) {
             myViewClasses = new ArrayList<String>();
-            PsiClass viewClass = PsiManager.getInstance(project).findClass("android.view.View", project.getAllScope());
+            PsiClass viewClass = JavaPsiFacade.getInstance(project).findClass("android.view.View",
+                    ProjectScope.getAllScope(project));
             if (viewClass != null) {
                 myViewClasses.add(viewClass.getName());
                 ClassInheritorsSearch.search(viewClass).forEach(new Processor<PsiClass>() {

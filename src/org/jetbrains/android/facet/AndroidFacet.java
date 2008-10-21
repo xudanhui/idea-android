@@ -6,6 +6,7 @@ import com.intellij.facet.FacetTypeId;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.fileTypes.StdFileTypes;
@@ -77,7 +78,7 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     }
 
     public String getOutputPackage() {
-        VirtualFile compilerOutput = ModuleRootManager.getInstance(getModule()).getCompilerOutputPath();
+        VirtualFile compilerOutput = CompilerModuleExtension.getInstance(getModule()).getCompilerOutputPath();
         return new File(compilerOutput.getPath(), getModule().getName() + ".apk").getPath();
     }
 

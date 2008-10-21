@@ -1,9 +1,11 @@
 package org.jetbrains.android.dom.converters;
 
 import com.intellij.openapi.util.Comparing;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.util.Query;
@@ -29,8 +31,9 @@ public class PackageClassResolvingConverter extends ResolvingConverter<PsiClass>
         final String packageName = manifest == null ? null : manifest.getPackage().getValue();
         ExtendClass extendClass = domElement.getAnnotation(ExtendClass.class);
         if (extendClass != null && packageName != null) {
-            PsiClass baseClass = context.findClass(extendClass.value(),
-                    GlobalSearchScope.allScope(context.getPsiManager().getProject()));
+            Project project = context.getPsiManager().getProject();
+            PsiClass baseClass = JavaPsiFacade.getInstance(project).findClass(extendClass.value(),
+                    GlobalSearchScope.allScope(project));
             if (baseClass != null) {
                 Query<PsiClass> query = ClassInheritorsSearch.search(baseClass,
                         GlobalSearchScope.moduleWithDependenciesScope(context.getModule()),
@@ -54,7 +57,7 @@ public class PackageClassResolvingConverter extends ResolvingConverter<PsiClass>
             else {
                 className = packageName + "." + s;
             }
-            return context.getPsiManager().findClass(className,
+            return JavaPsiFacade.getInstance(context.getPsiManager().getProject()).findClass(className,
                     GlobalSearchScope.moduleWithDependenciesAndLibrariesScope(context.getModule()));
         }
         return null;

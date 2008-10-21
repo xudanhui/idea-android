@@ -2,13 +2,13 @@ package org.jetbrains.android.compiler;
 
 import com.intellij.openapi.compiler.ValidityState;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.AndroidManager;
+import org.jetbrains.android.facet.AndroidFacet;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.DataInput;
+import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class ResourcesValidityState implements ValidityState {
     public ResourcesValidityState(Module module, boolean includeClassesDex) {
         myClassesTimestamp = -1;
         if (includeClassesDex) {
-            VirtualFile outputPath = ModuleRootManager.getInstance(module).getCompilerOutputPath();
+            VirtualFile outputPath = CompilerModuleExtension.getInstance(module).getCompilerOutputPath();
             if (outputPath != null) {
                 VirtualFile classesDex = outputPath.findChild(AndroidManager.CLASSES_FILE_NAME);
                 if (classesDex != null) {
@@ -50,7 +50,7 @@ public class ResourcesValidityState implements ValidityState {
         }
     }
 
-    public ResourcesValidityState(DataInputStream is) throws IOException {
+    public ResourcesValidityState(DataInput is) throws IOException {
         myClassesTimestamp = is.readLong();
         int count = is.readInt();
         for(int i=0; i<count; i++) {
@@ -68,7 +68,7 @@ public class ResourcesValidityState implements ValidityState {
         return myResourceTimestamps.equals(rhs.myResourceTimestamps) && myClassesTimestamp == rhs.myClassesTimestamp;
     }
 
-    public void save(DataOutputStream os) throws IOException {
+    public void save(DataOutput os) throws IOException {
         os.writeLong(myClassesTimestamp);
         os.writeInt(myResourceTimestamps.size());
         for(Map.Entry<String, Long> e: myResourceTimestamps.entrySet()) {

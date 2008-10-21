@@ -1,11 +1,12 @@
 package org.jetbrains.android.facet;
 
+import com.intellij.facet.FacetManager;
 import com.intellij.ide.util.newProjectWizard.FrameworkSupportConfigurable;
 import com.intellij.ide.util.newProjectWizard.FrameworkSupportProvider;
 import com.intellij.openapi.module.Module;
-import com.intellij.facet.FacetManager;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.android.util.AndroidBundle;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author yole
@@ -16,7 +17,7 @@ public class AndroidSupportProvider extends FrameworkSupportProvider {
     }
 
     @NotNull
-    public FrameworkSupportConfigurable createConfigurable() {
+    public FrameworkSupportConfigurable createConfigurable(Project project) {
         return new AndroidSupportConfigurable();
     }
 

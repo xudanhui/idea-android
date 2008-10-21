@@ -127,7 +127,7 @@ public class AndroidPackagingCompiler implements ProjectComponent, PackagingComp
         return true;
     }
 
-    public ValidityState createValidityState(DataInputStream is) throws IOException {
+    public ValidityState createValidityState(DataInput is) throws IOException {
         return new ResourcesValidityState(is);
     }
 
