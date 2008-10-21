@@ -1,13 +1,15 @@
 package org.jetbrains.android.run;
 
-import com.intellij.execution.ExecutionUtil;
+import com.intellij.execution.JavaExecutionUtil;
 import com.intellij.execution.Location;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.impl.RunnerAndConfigurationSettingsImpl;
 import com.intellij.execution.junit.RuntimeConfigurationProducer;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,9 +29,11 @@ public class AndroidConfigurationProducer extends RuntimeConfigurationProducer i
 
     @Nullable
     protected RunnerAndConfigurationSettingsImpl createConfigurationByElement(Location location, ConfigurationContext configurationContext) {
-        location = ExecutionUtil.stepIntoSingleClass(location);
+        location = JavaExecutionUtil.stepIntoSingleClass(location);
         PsiElement element = location.getPsiElement();
-        PsiClass activityClass = element.getManager().findClass("android.app.Activity", element.getProject().getAllScope());
+        final Project project = element.getProject();
+        PsiClass activityClass = JavaPsiFacade.getInstance(project).findClass("android.app.Activity",
+                ProjectScope.getAllScope(project));
         if (activityClass == null) return null;
         while((element = PsiTreeUtil.getParentOfType(element, PsiClass.class)) != null) {
             PsiClass elementClass = (PsiClass) element;
@@ -46,9 +50,9 @@ public class AndroidConfigurationProducer extends RuntimeConfigurationProducer i
         RunnerAndConfigurationSettingsImpl settings = cloneTemplateConfiguration(project, context);
         final AndroidRunConfiguration configuration = (AndroidRunConfiguration) settings.getConfiguration();
         configuration.ACTIVITY_CLASS = psiClass.getQualifiedName();
-        configuration.setName(ExecutionUtil.getPresentableClassName(configuration.ACTIVITY_CLASS,
+        configuration.setName(JavaExecutionUtil.getPresentableClassName(configuration.ACTIVITY_CLASS,
                 configuration.getConfigurationModule()));
-        configuration.setModule(ExecutionUtil.findModule(psiClass));
+        configuration.setModule(JavaExecutionUtil.findModule(psiClass));
         return settings;
     }
 

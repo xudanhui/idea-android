@@ -2,9 +2,11 @@ package org.jetbrains.android.dom.converters;
 
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
+import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.util.xml.ConvertContext;
 import com.intellij.util.xml.ResolvingConverter;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,8 +27,9 @@ public class PsiEnumConverter extends ResolvingConverter<String> {
     @NotNull
     public Collection<? extends String> getVariants(ConvertContext context) {
         ArrayList<String> result = new ArrayList<String>();
-        GlobalSearchScope scope = GlobalSearchScope.allScope(context.getModule().getProject());
-        PsiClass psiClass = context.getPsiManager().findClass(myEnumClassName, scope);
+        final Project project = context.getPsiManager().getProject();
+        GlobalSearchScope scope = GlobalSearchScope.allScope(project);
+        PsiClass psiClass = JavaPsiFacade.getInstance(project).findClass(myEnumClassName, scope);
         if (psiClass != null) {
             PsiField[] fields = psiClass.getFields();
             for(PsiField field: fields) {
@@ -41,8 +44,9 @@ public class PsiEnumConverter extends ResolvingConverter<String> {
 
     public String fromString(@Nullable @NonNls String s, ConvertContext context) {
         if (s == null) return null;
-        GlobalSearchScope scope = GlobalSearchScope.allScope(context.getModule().getProject());
-        PsiClass psiClass = context.getPsiManager().findClass(myEnumClassName, scope);
+        final Project project = context.getPsiManager().getProject();
+        GlobalSearchScope scope = GlobalSearchScope.allScope(project);
+        PsiClass psiClass = JavaPsiFacade.getInstance(project).findClass(myEnumClassName, scope);
         if (psiClass != null) {
             PsiField field = psiClass.findFieldByName(s.toUpperCase(), false);
             if (field == null) return null;

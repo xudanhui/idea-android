@@ -26,7 +26,7 @@ public class ConstantFieldConverter extends ResolvingConverter<String> {
         LookupClass lookupClass = element.getAnnotation(LookupClass.class);
         LookupPrefix lookupPrefix = element.getAnnotation(LookupPrefix.class);
         if (lookupClass != null && lookupPrefix != null) {
-            PsiClass psiClass = context.findClass(lookupClass.value(),
+            PsiClass psiClass = JavaPsiFacade.getInstance(context.getPsiManager().getProject()).findClass(lookupClass.value(),
                     GlobalSearchScope.allScope(context.getModule().getProject()));
             if (psiClass != null) {
                 PsiField[] psiFields = psiClass.getFields();

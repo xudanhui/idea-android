@@ -1,13 +1,13 @@
 package org.jetbrains.android.run;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.process.*;
-import com.intellij.execution.runners.RunnerInfo;
+import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.facet.FacetManager;
-import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.SettingsEditor;
@@ -19,6 +19,7 @@ import com.intellij.refactoring.listeners.RefactoringElementListener;
 import org.jdom.Element;
 import org.jetbrains.android.dom.manifest.Manifest;
 import org.jetbrains.android.facet.AndroidFacet;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -29,15 +30,15 @@ import java.util.List;
 /**
  * @author yole
  */
-public class AndroidRunConfiguration extends ModuleBasedConfiguration {
+public class AndroidRunConfiguration extends ModuleBasedConfiguration<JavaRunConfigurationModule> {
     public String ACTIVITY_CLASS = "";
 
     public AndroidRunConfiguration(String name, Project project, ConfigurationFactory factory) {
-        super(name, new RunConfigurationModule(project, false), factory);
+        super(name, new JavaRunConfigurationModule(project, false), factory);
     }
 
     public void checkConfiguration() throws RuntimeConfigurationException {
-        final RunConfigurationModule configurationModule = getConfigurationModule();
+        final JavaRunConfigurationModule configurationModule = getConfigurationModule();
         configurationModule.checkModuleAndClassName(ACTIVITY_CLASS, "Activity class not specified");
     }
 
@@ -88,10 +89,8 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration {
         return null;
     }
 
-    public RunProfileState getState(DataContext context,
-                                    RunnerInfo runnerInfo,
-                                    RunnerSettings runnerSettings,
-                                    ConfigurationPerRunnerSettings configurationSettings) throws ExecutionException {
+    public RunProfileState getState(@NotNull Executor executor,
+                                    @NotNull ExecutionEnvironment executionEnvironment) throws ExecutionException {
         final Module module = getConfigurationModule().getModule();
         AndroidFacet androidFacet = FacetManager.getInstance(module).getFacetByType(AndroidFacet.ID);
         if (androidFacet == null) {
@@ -103,7 +102,7 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration {
         if (!emulatorPath.exists()) {
             throw new ExecutionException("Android emulator not found");
         }
-        CommandLineState state = new CommandLineState(runnerSettings, configurationSettings) {
+        CommandLineState state = new CommandLineState(executionEnvironment) {
             protected GeneralCommandLine createCommandLine() throws ExecutionException {
                 GeneralCommandLine commandLine = new GeneralCommandLine();
                 commandLine.setExePath(emulatorPath.getAbsolutePath());
@@ -118,7 +117,7 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration {
         };
         TextConsoleBuilder consoleBuilder = TextConsoleBuilderFactory.getInstance().createBuilder(getProject());
         state.setConsoleBuilder(consoleBuilder);
-        state.setModulesToCompile(getModules());
+//      TODO[yole] state.setModulesToCompile(getModules());
         return state;
     }
 

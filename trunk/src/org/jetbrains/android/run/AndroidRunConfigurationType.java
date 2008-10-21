@@ -43,6 +43,11 @@ public class AndroidRunConfigurationType implements ConfigurationType {
         return AndroidManager.ANDROID_ICON;
     }
 
+    @NotNull
+    public String getId() {
+        return "AndroidRunConfigurationType";
+    }
+
     public ConfigurationFactory[] getConfigurationFactories() {
         return new ConfigurationFactory[] { myFactory };
     }

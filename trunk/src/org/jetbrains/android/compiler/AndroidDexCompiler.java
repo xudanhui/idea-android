@@ -6,7 +6,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.*;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.android.compiler.tools.AndroidDx;
@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.DataInputStream;
+import java.io.DataInput;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +61,7 @@ public class AndroidDexCompiler implements ClassPostProcessingCompiler, ProjectC
         return true;
     }
 
-    public ValidityState createValidityState(DataInputStream is) throws IOException {
+    public ValidityState createValidityState(DataInput is) throws IOException {
         return null;
     }
 
@@ -99,8 +99,8 @@ public class AndroidDexCompiler implements ClassPostProcessingCompiler, ProjectC
             for (Module module : modules) {
                 AndroidFacet facet = FacetManager.getInstance(module).getFacetByType(AndroidFacet.ID);
                 if (facet != null) {
-                    ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-                    VirtualFile outputPath = rootManager.getCompilerOutputPath();
+                    CompilerModuleExtension extension = CompilerModuleExtension.getInstance(module);
+                    VirtualFile outputPath = extension.getCompilerOutputPath();
                     AndroidFacetConfiguration configuration = facet.getConfiguration();
                     items.add(new DexItem(module, outputPath, configuration.SDK_PATH));
                 }
