@@ -1,0 +1,45 @@
+<!DOCTYPE idea-plugin PUBLIC "Plugin/DTD" "http://plugins.intellij.net/plugin.dtd">
+<idea-plugin version="2" url="http://idea-android.googlecode.com/">
+    <name>Android Support</name>
+    <description>Supports development of Open Handset Alliance Android applications with IntelliJ IDEA</description>
+    <version>0.1.1</version>
+    <vendor logo="/icons/android.png">JetBrains</vendor>
+    <idea-version since-build="7361" until-build="7999"/>
+    <application-components>
+        <component>
+            <implementation-class>org.jetbrains.android.AndroidManager</implementation-class>
+        </component>
+        <component>
+            <implementation-class>org.jetbrains.android.run.AndroidRunConfigurationType</implementation-class>
+        </component>
+    </application-components>
+    <project-components>
+        <component>
+            <implementation-class>org.jetbrains.android.compiler.AndroidAptCompiler</implementation-class>
+        </component>
+        <component>
+            <implementation-class>org.jetbrains.android.compiler.AndroidIdlCompiler</implementation-class>
+        </component>
+        <component>
+            <implementation-class>org.jetbrains.android.compiler.AndroidDexCompiler</implementation-class>
+        </component>
+        <component>
+            <implementation-class>org.jetbrains.android.compiler.AndroidPackagingCompiler</implementation-class>
+        </component>
+    </project-components>
+    <actions>
+        <action id="org.jetbrains.android.actions.CreateActivityAction"
+                class="org.jetbrains.android.actions.CreateActivityAction" text="Activity"
+                description="Create new Android activity">
+            <add-to-group group-id="NewGroup" anchor="last"/>
+        </action>
+    </actions>
+    <extensions xmlns="com.intellij">
+        <dom.fileDescription implementation="org.jetbrains.android.dom.manifest.ManifestDomFileDescription"/>
+        <dom.fileDescription implementation="org.jetbrains.android.dom.resources.ResourcesDomFileDescription"/>
+        <dom.fileDescription implementation="org.jetbrains.android.dom.layout.LayoutDomFileDescription"/>
+        <dom.extender domClass="org.jetbrains.android.dom.AndroidDomElement" extenderClass="org.jetbrains.android.dom.AndroidDomExtender"/>
+        <frameworkSupport implementation="org.jetbrains.android.facet.AndroidSupportProvider"/>
+        <configurationProducer implementation="org.jetbrains.android.run.AndroidConfigurationProducer"/>
+    </extensions>
+</idea-plugin>
