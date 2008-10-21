@@ -7,6 +7,7 @@ import com.intellij.ide.fileTemplates.FileTemplateManager;
 import com.intellij.ide.fileTemplates.FileTemplateUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.ide.util.newProjectWizard.FrameworkSupportConfigurable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.module.Module;
@@ -19,19 +20,19 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.JarFileSystem;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiManager;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
+import java.io.InputStream;
+import java.io.IOException;
 
 /**
  * @author yole
@@ -132,22 +133,26 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
         }
     }
 
-    private static void createResources(Project project, VirtualFile rootDir) {
-        try {
-            VirtualFile resDir = rootDir.createChildDirectory(project, "res");
-            VirtualFile drawableDir = resDir.createChildDirectory(project, "drawable");
-            VirtualFile iconFile = drawableDir.createChildData(project, "icon.png");
-            InputStream iconStream = AndroidSupportConfigurable.class.getResourceAsStream("/icons/androidLarge.png");
-            try {
-                byte[] bytes = FileUtil.adaptiveLoadBytes(iconStream);
-                iconFile.setBinaryContent(bytes);
+    private static void createResources(final Project project, final VirtualFile rootDir) {
+        ApplicationManager.getApplication().runWriteAction(new Runnable() {
+            public void run() {
+                try {
+                    VirtualFile resDir = rootDir.createChildDirectory(project, "res");
+                    VirtualFile drawableDir = resDir.createChildDirectory(project, "drawable");
+                    VirtualFile iconFile = drawableDir.createChildData(project, "icon.png");
+                    InputStream iconStream = AndroidSupportConfigurable.class.getResourceAsStream("/icons/androidLarge.png");
+                    try {
+                        byte[] bytes = FileUtil.adaptiveLoadBytes(iconStream);
+                        iconFile.setBinaryContent(bytes);
+                    }
+                    finally {
+                        iconStream.close();
+                    }
+                } catch (IOException e) {
+                    LOG.error(e);
+                }
             }
-            finally {
-                iconStream.close();
-            }
-        } catch (IOException e) {
-            LOG.error(e);
-        }
+        });
     }
 
     private void createUIComponents() {
