@@ -13,6 +13,7 @@ import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElement;
 import com.intellij.refactoring.listeners.RefactoringElementListener;
@@ -158,9 +159,13 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration<JavaRunCon
         }
 
         private void startActivity() {
-            Manifest manifest = myFacet.getManifest();
+            final Manifest manifest = myFacet.getManifest();
             if (manifest == null) return;
-            String packageName = manifest.getPackage().getValue();
+            String packageName = ApplicationManager.getApplication().runReadAction(new Computable<String>() {
+                public String compute() {
+                    return manifest.getPackage().getValue();
+                }
+            });
             String activityName = packageName + "/" + myActivityClass;
             runAdbProcess(myFacet.getSdkPath(), this, null,
                     "shell", "am", "start", "-n", activityName);
