@@ -29,7 +29,7 @@ public final class AndroidDx {
                 SystemInfo.isWindows ? "" : "-JXmx384M",
                 "--dex",
                 "--output=" + classesDir + File.separatorChar + "classes.dex",
-                "--locals=full",
+//                "--locals=full",
                 "--positions=lines",
                 classesDir
         );

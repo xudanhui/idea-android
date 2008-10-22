@@ -12,10 +12,10 @@ import org.jetbrains.android.dom.converters.ConstantFieldConverter;
  * @author yole
  */
 public interface Action extends DomElement {
-    @Attribute("value")
+    @Attribute("name")
     @Convert(ConstantFieldConverter.class)
     @LookupClass("android.content.Intent")
     @LookupPrefix("android.intent.action")
-    AndroidAttributeValue<String> getValue();
+    AndroidAttributeValue<String> getName();
 }
     

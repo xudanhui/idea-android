@@ -14,11 +14,11 @@ import java.util.List;
  * @author yole
  */
 public interface Activity extends DomElement {
-    @Attribute("class")
+    @Attribute("name")
     @Required
     @Convert(PackageClassResolvingConverter.class)
     @ExtendClass("android.app.Activity")
-    GenericAttributeValue<PsiClass> getActivityClass();
+    AndroidAttributeValue<PsiClass> getActivityClass();
 
     @Convert(ResourceReferenceConverter.class)
     @ResourceType("string")

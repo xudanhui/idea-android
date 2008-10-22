@@ -3,20 +3,20 @@ package org.jetbrains.android.compiler;
 import com.intellij.openapi.compiler.*;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.io.ZipUtil;
+import org.jetbrains.android.AndroidManager;
+import org.jetbrains.android.compiler.tools.AndroidApkBuilder;
 import org.jetbrains.android.compiler.tools.AndroidApt;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.facet.AndroidFacetConfiguration;
-import org.jetbrains.android.AndroidManager;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -87,7 +87,10 @@ public class AndroidPackagingCompiler implements ProjectComponent, PackagingComp
                         item.getSdkPath(), item.getResourcesPath(), item.getOutputPath());
                 AndroidCompileUtil.addMessages(context, messages);
                 if (messages.get(CompilerMessageCategory.ERROR).isEmpty()) {
-                    addClassesDex(item.getOutputPath(), item.getFinalPath(), item.getClassesDexPath());
+                    final Map<CompilerMessageCategory, List<String>> apkuBuilderMessages =
+                            AndroidApkBuilder.execute(item.getSdkPath(), item.getOutputPath(),
+                                    item.getClassesDexPath(), item.getFinalPath());
+                    AndroidCompileUtil.addMessages(context, apkuBuilderMessages);
                 }
             } catch (IOException e) {
                 context.addMessage(CompilerMessageCategory.ERROR, e.getMessage(), null, -1, -1);
@@ -97,25 +100,6 @@ public class AndroidPackagingCompiler implements ProjectComponent, PackagingComp
             }
         }
         return result.toArray(new ProcessingItem[result.size()]);
-    }
-
-    private void addClassesDex(String outputPath, String finalPath, String classesDexPath) throws IOException {
-        FileInputStream is = new FileInputStream(outputPath);
-        try {
-            FileOutputStream os = new FileOutputStream(finalPath);
-            try {
-                Map<String, File> map = new HashMap<String, File>();
-                map.put(AndroidManager.CLASSES_FILE_NAME, new File(classesDexPath));
-                ZipUtil.update(is, os, map);
-            }
-            finally {
-                os.close();
-            }
-        }
-        finally {
-            is.close();
-        }
-        FileUtil.delete(new File(outputPath));
     }
 
     @NotNull
