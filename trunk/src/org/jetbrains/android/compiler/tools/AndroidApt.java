@@ -26,7 +26,7 @@ public final class AndroidApt {
     public static Map<CompilerMessageCategory, List<String>> compile(String rootDirPath, String outDir, String resourceDir, String sdkPath) throws IOException {
         return ExternalCompilerTool.execute(
                 buildToolPath(sdkPath),
-                "compile",
+                "package",
                 "-m",
                 "-J",
                 outDir,
@@ -46,11 +46,11 @@ public final class AndroidApt {
                 buildToolPath(sdkPath),
                 "package",
                 "-f",     // force overwrite of existing files
-                "-c",     // compile resources from assets
+//                "-c",     // compile resources from assets
                 "-M", buildManifestPath(rootDirPath),
                 "-S", resourceDir,
                 "-I", buildJarPath(sdkPath),
-                outputPath);
+                "-F", outputPath);
     }
 
     private static String buildToolPath(String sdkPath) {

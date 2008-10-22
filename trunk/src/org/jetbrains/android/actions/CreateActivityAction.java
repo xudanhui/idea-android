@@ -102,9 +102,9 @@ public class CreateActivityAction extends CreateElementActionBase {
         if (myMarkAsStartupActivityCheckBox.isSelected()) {
             IntentFilter filter = activity.addIntentFilter();
             Action action = filter.addAction();
-            action.getValue().setValue("android.intent.action.MAIN");
+            action.getName().setValue("android.intent.action.MAIN");
             Category category = filter.addCategory();
-            category.getValue().setValue("android.intent.category.LAUNCHER");
+            category.getName().setValue("android.intent.category.LAUNCHER");
         }
     }
 

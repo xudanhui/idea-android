@@ -12,9 +12,9 @@ import org.jetbrains.android.dom.AndroidAttributeValue;
  * @author yole
  */
 public interface Category extends DomElement {
-    @Attribute("value")
+    @Attribute("name")
     @Convert(ConstantFieldConverter.class)
     @LookupClass("android.content.Intent")
     @LookupPrefix("android.intent.category")
-    AndroidAttributeValue<String> getValue();
+    AndroidAttributeValue<String> getName();
 }
