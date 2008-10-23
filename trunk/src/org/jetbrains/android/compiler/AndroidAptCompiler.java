@@ -4,8 +4,6 @@ import com.intellij.compiler.impl.CompilerUtil;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.*;
-import com.intellij.openapi.components.ProjectComponent;
-import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Computable;
@@ -13,7 +11,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.android.compiler.tools.AndroidApt;
 import org.jetbrains.android.dom.manifest.Manifest;
 import org.jetbrains.android.facet.AndroidFacet;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
@@ -28,14 +25,8 @@ import java.util.Map;
  *
  * @author Alexey Efimov
  */
-public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComponent {
+public class AndroidAptCompiler implements SourceGeneratingCompiler {
     private static final GenerationItem[] EMPTY_GENERATION_ITEM_ARRAY = {};
-
-    private final CompilerManager myCompilerManager;
-
-    public AndroidAptCompiler(CompilerManager compilerManager) {
-        myCompilerManager = compilerManager;
-    }
 
     public GenerationItem[] getGenerationItems(CompileContext context) {
         Module[] affectedModules = context.getCompileScope().getAffectedModules();
@@ -95,26 +86,6 @@ public class AndroidAptCompiler implements SourceGeneratingCompiler, ProjectComp
 
     public ValidityState createValidityState(DataInput is) throws IOException {
         return new ResourcesValidityState(is);
-    }
-
-    public void projectOpened() {
-    }
-
-    public void projectClosed() {
-    }
-
-    @NonNls
-    @NotNull
-    public String getComponentName() {
-        return "AndroidAptCompiler";
-    }
-
-    public void initComponent() {
-        myCompilerManager.addCompiler(this);
-    }
-
-    public void disposeComponent() {
-        myCompilerManager.removeCompilableFileType(StdFileTypes.XML);
     }
 
     private final static class AptGenerationItem implements GenerationItem {

@@ -4,25 +4,6 @@
     <version>0.2</version>
     <vendor logo="/icons/android.png">JetBrains</vendor>
     <idea-version since-build="8890" until-build="8999"/>
-    <application-components>
-        <component>
-            <implementation-class>org.jetbrains.android.AndroidManager</implementation-class>
-        </component>
-    </application-components>
-    <project-components>
-        <component>
-            <implementation-class>org.jetbrains.android.compiler.AndroidAptCompiler</implementation-class>
-        </component>
-        <component>
-            <implementation-class>org.jetbrains.android.compiler.AndroidIdlCompiler</implementation-class>
-        </component>
-        <component>
-            <implementation-class>org.jetbrains.android.compiler.AndroidDexCompiler</implementation-class>
-        </component>
-        <component>
-            <implementation-class>org.jetbrains.android.compiler.AndroidPackagingCompiler</implementation-class>
-        </component>
-    </project-components>
     <actions>
         <action id="org.jetbrains.android.actions.CreateActivityAction"
                 class="org.jetbrains.android.actions.CreateActivityAction" text="Activity"
@@ -38,11 +19,20 @@
         <frameworkSupport implementation="org.jetbrains.android.facet.AndroidSupportProvider"/>
         <configurationProducer implementation="org.jetbrains.android.run.AndroidConfigurationProducer"/>
 
+        <fileTypeFactory implementation="org.jetbrains.android.fileTypes.AndroidFileTypeFactory"/>
         <lang.parserDefinition language="AIDL" implementationClass="com.intellij.lang.java.JavaParserDefinition"/>
         <lang.formatter language="AIDL" implementationClass="com.intellij.lang.java.JavaFormattingModelBuilder"/>
         <lang.commenter language="AIDL" implementationClass="com.intellij.lang.java.JavaCommenter"/>
         <lang.findUsagesProvider language="AIDL" implementationClass="com.intellij.lang.java.JavaFindUsagesProvider"/>
 
         <configurationType implementation="org.jetbrains.android.run.AndroidRunConfigurationType"/>
+        <inspectionToolProvider implementation="org.jetbrains.android.AndroidInspectionToolProvider"/>
+        <facetType implementation="org.jetbrains.android.facet.AndroidFacetType"/>
+        <fileTemplateGroup implementation="org.jetbrains.android.AndroidFileTemplateProvider"/>
+
+        <compiler implementation="org.jetbrains.android.compiler.AndroidAptCompiler"/>
+        <compiler implementation="org.jetbrains.android.compiler.AndroidIdlCompiler"/>
+        <compiler implementation="org.jetbrains.android.compiler.AndroidDexCompiler"/>
+        <compiler implementation="org.jetbrains.android.compiler.AndroidPackagingCompiler"/>
     </extensions>
 </idea-plugin>
