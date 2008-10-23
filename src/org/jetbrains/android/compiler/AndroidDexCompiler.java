@@ -4,7 +4,6 @@ import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.*;
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.CompilerModuleExtension;
 import com.intellij.openapi.util.Computable;
@@ -12,7 +11,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.android.compiler.tools.AndroidDx;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.facet.AndroidFacetConfiguration;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,13 +25,7 @@ import java.util.Map;
  *
  * @author Alexey Efimov
  */
-public class AndroidDexCompiler implements ClassPostProcessingCompiler, ProjectComponent {
-    private final CompilerManager myCompilerManager;
-
-    public AndroidDexCompiler(CompilerManager compilerManager) {
-        myCompilerManager = compilerManager;
-    }
-
+public class AndroidDexCompiler implements ClassPostProcessingCompiler {
     @NotNull
     public ProcessingItem[] getProcessingItems(CompileContext context) {
         Module[] affectedModules = context.getCompileScope().getAffectedModules();
@@ -63,26 +55,6 @@ public class AndroidDexCompiler implements ClassPostProcessingCompiler, ProjectC
 
     public ValidityState createValidityState(DataInput is) throws IOException {
         return null;
-    }
-
-    public void projectOpened() {
-    }
-
-    public void projectClosed() {
-    }
-
-    @NonNls
-    @NotNull
-    public String getComponentName() {
-        return "AndroidDexCompiler";
-    }
-
-    public void initComponent() {
-        myCompilerManager.addCompiler(this);
-    }
-
-    public void disposeComponent() {
-        myCompilerManager.removeCompiler(this);
     }
 
     private final class PrepareAction implements Computable<ProcessingItem[]> {

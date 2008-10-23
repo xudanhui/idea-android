@@ -1,8 +1,6 @@
 package org.jetbrains.android.facet;
 
-import com.intellij.facet.Facet;
-import com.intellij.facet.FacetManager;
-import com.intellij.facet.FacetTypeId;
+import com.intellij.facet.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -33,10 +31,8 @@ import java.util.List;
 public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     public static final FacetTypeId<AndroidFacet> ID = new FacetTypeId<AndroidFacet>("android");
 
-    public static final AndroidFacetType ourFacetType = new AndroidFacetType();
-
     public AndroidFacet(@NotNull Module module, String name, @NotNull AndroidFacetConfiguration configuration) {
-        super(ourFacetType, module, name, configuration, null);
+        super(getFacetType(), module, name, configuration, null);
     }
 
     public static AndroidFacet getInstance(Module module) {
@@ -185,5 +181,9 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
             }
         }
         return result;
+    }
+
+    public static AndroidFacetType getFacetType() {
+        return (AndroidFacetType) FacetTypeRegistry.getInstance().findFacetType(AndroidFacet.ID);
     }
 }

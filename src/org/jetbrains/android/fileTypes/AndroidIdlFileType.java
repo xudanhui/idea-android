@@ -18,7 +18,7 @@ public class AndroidIdlFileType extends LanguageFileType {
     public static final AndroidIdlFileType ourFileType = new AndroidIdlFileType();
 
     @NonNls
-    public static final String[] DEFAULT_ASSOCIATED_EXTENSIONS = new String[]{"aidl"};
+    public static final String DEFAULT_ASSOCIATED_EXTENSION = "aidl";
 
     private AndroidIdlFileType() {
         super(new AndroidIdlLanguage());
@@ -27,7 +27,7 @@ public class AndroidIdlFileType extends LanguageFileType {
     @NotNull
     @NonNls
     public String getDefaultExtension() {
-        return DEFAULT_ASSOCIATED_EXTENSIONS[0];
+        return DEFAULT_ASSOCIATED_EXTENSION;
     }
 
     @NotNull

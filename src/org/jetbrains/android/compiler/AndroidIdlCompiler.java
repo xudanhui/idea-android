@@ -5,8 +5,6 @@ import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.compiler.*;
-import com.intellij.openapi.components.ProjectComponent;
-import com.intellij.openapi.fileTypes.StdFileTypes;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
@@ -17,7 +15,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.android.compiler.tools.AndroidIdl;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.fileTypes.AndroidIdlFileType;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
@@ -32,15 +29,13 @@ import java.util.Map;
  *
  * @author Alexey Efimov
  */
-public class AndroidIdlCompiler implements SourceGeneratingCompiler, ProjectComponent {
+public class AndroidIdlCompiler implements SourceGeneratingCompiler {
     private static final GenerationItem[] EMPTY_GENERATION_ITEM_ARRAY = {};
 
     private final Project myProject;
-    private final CompilerManager myCompilerManager;
 
-    public AndroidIdlCompiler(Project project, CompilerManager compilerManager) {
+    public AndroidIdlCompiler(Project project) {
         myProject = project;
-        myCompilerManager = compilerManager;
     }
 
     public GenerationItem[] getGenerationItems(CompileContext context) {
@@ -78,26 +73,6 @@ public class AndroidIdlCompiler implements SourceGeneratingCompiler, ProjectComp
 
     public ValidityState createValidityState(DataInput is) throws IOException {
         return null;
-    }
-
-    public void projectOpened() {
-    }
-
-    public void projectClosed() {
-    }
-
-    @NonNls
-    @NotNull
-    public String getComponentName() {
-        return "AndroidIdlCompiler";
-    }
-
-    public void initComponent() {
-        myCompilerManager.addCompiler(this);
-    }
-
-    public void disposeComponent() {
-        myCompilerManager.removeCompilableFileType(StdFileTypes.XML);
     }
 
     private final static class IdlGenerationItem implements GenerationItem {

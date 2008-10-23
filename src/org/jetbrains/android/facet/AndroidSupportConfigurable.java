@@ -58,7 +58,7 @@ public class AndroidSupportConfigurable extends FrameworkSupportConfigurable {
     public void addSupport(Module module, ModifiableRootModel modifiableRootModel, @Nullable Library library) {
         final FacetManager facetManager = FacetManager.getInstance(module);
         ModifiableFacetModel model = facetManager.createModifiableModel();
-        AndroidFacet facet = facetManager.createFacet(AndroidFacet.ourFacetType, "Android", null);
+        AndroidFacet facet = facetManager.createFacet(AndroidFacet.getFacetType(), "Android", null);
         facet.getConfiguration().SDK_PATH = mySdkPathField.getText();
         model.addFacet(facet);
         model.commit();

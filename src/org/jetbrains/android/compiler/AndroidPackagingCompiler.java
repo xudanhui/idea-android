@@ -1,7 +1,6 @@
 package org.jetbrains.android.compiler;
 
 import com.intellij.openapi.compiler.*;
-import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.android.AndroidManager;
@@ -9,7 +8,6 @@ import org.jetbrains.android.compiler.tools.AndroidApkBuilder;
 import org.jetbrains.android.compiler.tools.AndroidApt;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.facet.AndroidFacetConfiguration;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,32 +21,7 @@ import java.util.Map;
 /**
  * @author yole
  */
-public class AndroidPackagingCompiler implements ProjectComponent, PackagingCompiler {
-    private CompilerManager myCompilerManager;
-
-    public AndroidPackagingCompiler(CompilerManager compilerManager) {
-        myCompilerManager = compilerManager;
-    }
-
-    public void projectOpened() {
-    }
-
-    public void projectClosed() {
-    }
-
-    @NonNls
-    @NotNull
-    public String getComponentName() {
-        return "AndroidPackagingCompiler";
-    }
-
-    public void initComponent() {
-        myCompilerManager.addCompiler(this);
-    }
-
-    public void disposeComponent() {
-        myCompilerManager.removeCompiler(this);
-    }
+public class AndroidPackagingCompiler implements PackagingCompiler {
 
     public void processOutdatedItem(CompileContext context, String url, @Nullable ValidityState state) {
     }
