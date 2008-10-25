@@ -21,9 +21,6 @@ public class ResourcesDomFileDescription extends DomFileDescription<Resources> {
             return false;
         }
         psiDirectory = psiDirectory.getParent();
-        if (psiDirectory == null || !"res".equals(psiDirectory.getName())) {
-            return false;
-        }
-        return true;
+        return psiDirectory != null && ("res".equals(psiDirectory.getName()) || "default".equals(psiDirectory.getName()));
     }
 }

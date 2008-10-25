@@ -1,13 +1,18 @@
 package org.jetbrains.android.facet;
 
-import com.intellij.facet.*;
+import com.intellij.facet.Facet;
+import com.intellij.facet.FacetManager;
+import com.intellij.facet.FacetTypeId;
+import com.intellij.facet.FacetTypeRegistry;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.CompilerModuleExtension;
-import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.fileTypes.StdFileTypes;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.roots.CompilerModuleExtension;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlFile;
@@ -16,8 +21,8 @@ import com.intellij.util.xml.DomFileElement;
 import com.intellij.util.xml.DomManager;
 import org.jetbrains.android.AndroidManager;
 import org.jetbrains.android.dom.manifest.Manifest;
-import org.jetbrains.android.dom.resources.Resources;
 import org.jetbrains.android.dom.resources.ResourceElement;
+import org.jetbrains.android.dom.resources.Resources;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,8 +68,17 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     }
 
     @Nullable
-    private VirtualFile getResourceTypeDir(String resourceType) {
-        VirtualFile resourcesDir = getResourcesDir();
+    public VirtualFile getSdkResourcesDir() {
+        final String sdkPath = getSdkPath();
+        if (StringUtil.isEmpty(sdkPath)) return null;
+        final VirtualFile sdkRoot = LocalFileSystem.getInstance().findFileByPath(sdkPath);
+        if (sdkRoot == null) return null;
+        return sdkRoot.findFileByRelativePath("tools/lib/res/default");
+    }
+
+    @Nullable
+    private VirtualFile getResourceTypeDir(String resourceType, @Nullable String resPackage) {
+        VirtualFile resourcesDir = "android".equals(resPackage) ? getSdkResourcesDir() : getResourcesDir();
         if (resourcesDir == null) return null;
         return resourcesDir.findChild(resourceType);
     }
@@ -85,9 +99,9 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
         return loadDomElement(manifestFile, Manifest.class);
     }
 
-    public List<Resources> getValueResources() {
+    public List<Resources> getValueResources(@Nullable String resPackage) {
         List<Resources> result = new ArrayList<Resources>();
-        VirtualFile valuesDir = getResourceTypeDir("values");
+        VirtualFile valuesDir = getResourceTypeDir("values", resPackage);
         if (valuesDir != null) {
             for(VirtualFile valuesFile: valuesDir.getChildren()) {
                 if (!valuesFile.isDirectory() && valuesFile.getFileType().equals(StdFileTypes.XML)) {
@@ -116,9 +130,9 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
         });
     }
 
-    public List<ResourceElement> getResourcesOfType(String resType) {
+    public List<ResourceElement> getResourcesOfType(String resType, @Nullable String resPackage) {
         List<ResourceElement> result = new ArrayList<ResourceElement>();
-        List<Resources> resourceFiles = getValueResources();
+        List<Resources> resourceFiles = getValueResources(resPackage);
         for(Resources res: resourceFiles) {
             if (resType.equals("string")) {
                 result.addAll(res.getStrings());
@@ -137,9 +151,9 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     }
 
     @Nullable
-    public PsiFile findResourceFile(String resType, String resourceName) {
+    public PsiFile findResourceFile(String resType, String resourceName, @Nullable String resPackage) {
         if (resType.equals("drawable")) {
-            return findDrawable(resourceName);
+            return findDrawable(resourceName, resPackage);
         }
         return null;
     }
@@ -147,8 +161,8 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     private static final String[] DRAWABLE_EXTENSIONS = new String[] { ".png", ".9.png", ".jpg" };
 
     @Nullable
-    private PsiFile findDrawable(String resourceName) {
-        VirtualFile typeDir = getResourceTypeDir("drawable");
+    private PsiFile findDrawable(String resourceName, @Nullable String resPackage) {
+        VirtualFile typeDir = getResourceTypeDir("drawable", resPackage);
         if (typeDir == null) return null;
         for(String ext: DRAWABLE_EXTENSIONS) {
             final VirtualFile drawableFile = typeDir.findChild(resourceName + ext);
@@ -166,7 +180,7 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     public List<String> getResourceFileNames(String resourceType) {
         List<String> result = new ArrayList<String>();
         if (resourceType.equals("drawable")) {
-            VirtualFile drawablesDir = getResourceTypeDir("drawable");
+            VirtualFile drawablesDir = getResourceTypeDir("drawable", null);
             if (drawablesDir != null) {
                 VirtualFile[] files = drawablesDir.getChildren();
                 for(VirtualFile file: files) {
