@@ -6,6 +6,7 @@ package org.jetbrains.android.dom.resources;
 public class ResourceValue {
     private String myValue;
     private char myPrefix;
+    private String myPackage;
     private String myResourceType;
     private String myResourceName;
 
@@ -34,7 +35,15 @@ public class ResourceValue {
         result.myPrefix = value.charAt(0);
         int pos = value.indexOf('/');
         if (pos > 0) {
-            result.myResourceType = value.substring(1, pos);
+            final String resType = value.substring(1, pos);
+            int colonIndex = resType.indexOf(':');
+            if (colonIndex > 0) {
+                result.myPackage = resType.substring(0, colonIndex);
+                result.myResourceType = resType.substring(colonIndex+1);
+            }
+            else {
+                result.myResourceType = resType;
+            }
             result.myResourceName = value.substring(pos+1);
         }
         else {
@@ -67,10 +76,19 @@ public class ResourceValue {
         return myResourceName;
     }
 
+    public String getPackage() {
+        return myPackage;
+    }
+
     public String toString() {
         if (myValue != null) {
             return myValue;
         }
-        return myPrefix + myResourceType + "/" + myResourceName;
+        final StringBuilder builder = new StringBuilder().append(myPrefix);
+        if (myPackage != null) {
+            builder.append(myPackage).append(":");
+        }
+        builder.append(myResourceType).append("/").append(myResourceName);
+        return builder.toString();
     }
 }
