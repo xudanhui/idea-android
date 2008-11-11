@@ -13,13 +13,14 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
+import com.intellij.psi.*;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.xml.DomElement;
 import com.intellij.util.xml.DomFileElement;
 import com.intellij.util.xml.DomManager;
 import org.jetbrains.android.AndroidManager;
+import org.jetbrains.android.dom.attrs.AttributeDefinitions;
+import org.jetbrains.android.dom.attrs.StyleableDefinition;
 import org.jetbrains.android.dom.manifest.Manifest;
 import org.jetbrains.android.dom.resources.ResourceElement;
 import org.jetbrains.android.dom.resources.Resources;
@@ -35,6 +36,9 @@ import java.util.List;
  */
 public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     public static final FacetTypeId<AndroidFacet> ID = new FacetTypeId<AndroidFacet>("android");
+
+    private AttributeDefinitions myManifestAttributeDefinitions;
+    private AttributeDefinitions myLayoutAttributeDefinitions;
 
     public AndroidFacet(@NotNull Module module, String name, @NotNull AndroidFacetConfiguration configuration) {
         super(getFacetType(), module, name, configuration, null);
@@ -195,6 +199,46 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
             }
         }
         return result;
+    }
+
+    public AttributeDefinitions getManifestAttributeDefinitions() {
+        if (myManifestAttributeDefinitions == null) {
+            myManifestAttributeDefinitions = parseAttributeDefinitions("attrs_manifest.xml");
+        }
+        return myManifestAttributeDefinitions;
+    }
+
+    public AttributeDefinitions getLayoutAttributeDefinitions() {
+        if (myLayoutAttributeDefinitions == null) {
+            myLayoutAttributeDefinitions = parseAttributeDefinitions("attrs.xml");
+            linkSuperclasses(myLayoutAttributeDefinitions);
+        }
+        return myLayoutAttributeDefinitions;
+    }
+
+    private void linkSuperclasses(AttributeDefinitions attributeDefinitions) {
+        JavaPsiFacade facade = JavaPsiFacade.getInstance(getModule().getProject());
+        for (String name : attributeDefinitions.getStyleableNames()) {
+            final StyleableDefinition definition = attributeDefinitions.getStyleableDefinition(name);
+            PsiClass layoutClass = facade.findClass("android.widget." + name, getModule().getModuleWithDependenciesAndLibrariesScope(false));
+            if (layoutClass != null) {
+                layoutClass = layoutClass.getSuperClass();
+                if (layoutClass != null) {
+                    StyleableDefinition superclassDefinition = attributeDefinitions.getStyleableDefinition(layoutClass.getName());
+                    definition.setSuperclass(superclassDefinition);
+                }
+            }
+        }
+    }
+
+    private AttributeDefinitions parseAttributeDefinitions(String fileName) {
+        final VirtualFile sdkValuesDir = getResourceTypeDir("values", "android");
+        if (sdkValuesDir == null) return null;
+        final VirtualFile vFile = sdkValuesDir.findChild(fileName);
+        if (vFile == null) return null;
+        final PsiFile file = PsiManager.getInstance(getModule().getProject()).findFile(vFile);
+        if (!(file instanceof XmlFile)) return null;
+        return new AttributeDefinitions((XmlFile) file);
     }
 
     public static AndroidFacetType getFacetType() {
