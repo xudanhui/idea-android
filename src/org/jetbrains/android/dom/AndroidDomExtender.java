@@ -1,10 +1,12 @@
 package org.jetbrains.android.dom;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
 import com.intellij.psi.xml.XmlTag;
+import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.util.Processor;
 import com.intellij.util.xml.Converter;
 import com.intellij.util.xml.XmlName;
@@ -12,16 +14,24 @@ import com.intellij.util.xml.reflect.DomExtender;
 import com.intellij.util.xml.reflect.DomExtension;
 import com.intellij.util.xml.reflect.DomExtensionsRegistrar;
 import org.jetbrains.android.AndroidManager;
+import org.jetbrains.android.dom.attrs.AttributeDefinition;
+import org.jetbrains.android.dom.attrs.AttributeDefinitions;
+import org.jetbrains.android.dom.attrs.AttributeFormat;
+import org.jetbrains.android.dom.attrs.StyleableDefinition;
 import org.jetbrains.android.dom.converters.PsiEnumConverter;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
 import org.jetbrains.android.dom.converters.StaticEnumConverter;
 import org.jetbrains.android.dom.layout.LayoutElement;
+import org.jetbrains.android.dom.manifest.Activity;
 import org.jetbrains.android.dom.resources.ResourceValue;
+import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author yole
@@ -30,66 +40,81 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
     private List<String> myViewClasses;
 
     public void registerExtensions(@NotNull AndroidDomElement androidDomElement, @NotNull DomExtensionsRegistrar registrar) {
-        /*
-        if (androidDomElement instanceof Activity) {
-            DomExtension extension = registrar.registerAttributeChildExtension(new XmlName("label", "android"),
-                    ResourceValue.class);
-            extension.setConverter(new ResourceReferenceConverter("string"));
-        }
-        */
         if (androidDomElement instanceof LayoutElement) {
             XmlTag tag = androidDomElement.getXmlTag();
             if (tag != null) {
                 String name = tag.getName();
-                Collection<String> attributes = getAttributeList(androidDomElement.getManager().getProject(), name);
-                for(String attr: attributes) {
-                    AndroidAttributeDescriptor descriptor = ourDescriptors.get(attr);
-                    if (descriptor != null) {
-                        XmlName xmlName = new XmlName(attr, AndroidManager.NAMESPACE_KEY);
-                        DomExtension extension = registrar.registerGenericAttributeValueChildExtension(xmlName, descriptor.myValueClass);
-                        if (descriptor.myConverter != null) {
-                            extension.setConverter(descriptor.myConverter);
-                        }
-                    }
+                final AndroidFacet facet = AndroidFacet.getInstance(androidDomElement.getModule());
+                if (facet != null) {
+                    final AttributeDefinitions attrDefs = facet.getLayoutAttributeDefinitions();
+                    final StyleableDefinition styleable = attrDefs.getStyleableDefinition(name);
+                    registerStyleableAttributes(registrar, styleable, tag);
                 }
+
                 List<String> viewClasses = getViewClasses(androidDomElement.getManager().getProject());
                 for(String s: viewClasses) {
                     registrar.registerCollectionChildrenExtension(new XmlName(s), LayoutElement.class);
                 }
             }
         }
+        else if (androidDomElement instanceof Activity) {
+            final AndroidFacet facet = AndroidFacet.getInstance(androidDomElement.getModule());
+            if (facet != null) {
+                final AttributeDefinitions attrDefs = facet.getManifestAttributeDefinitions();
+                final StyleableDefinition styleable = attrDefs.getStyleableDefinition("AndroidManifestActivity");
+                registerStyleableAttributes(registrar, styleable, androidDomElement.getXmlTag());
+            }
+        }
 
         // TODO[yole] return new Object[] {PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT };
     }
 
-    private static Collection<String> getAttributeList(final Project project, String name) {
-        Collection<String> result = new HashSet<String>();
-        final JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
-        PsiClass styleableClass = facade.findClass("android.R.styleable", ProjectScope.getAllScope(project));
-        if (styleableClass != null) {
-            collectAttributesForClass(name, result, styleableClass);
-            PsiClass layoutClass = facade.findClass("android.widget." + name, ProjectScope.getAllScope(project));
-            if (layoutClass != null) {
-                layoutClass = layoutClass.getSuperClass();
-                while(layoutClass != null &&
-                        !CommonClassNames.JAVA_LANG_OBJECT.equals(layoutClass.getQualifiedName())) {
-                    collectAttributesForClass(layoutClass.getName(), result, styleableClass);
-                    layoutClass = layoutClass.getSuperClass();
+    private void registerStyleableAttributes(DomExtensionsRegistrar registrar, StyleableDefinition styleable, XmlTag tag) {
+        final XmlAttribute[] attributes = tag.getAttributes();
+        for (XmlAttribute attribute : attributes) {
+            final String ns = attribute.getNamespace();
+            if (ns.equals(AndroidManager.NAMESPACE)) {
+                final AttributeDefinition definition = styleable.findAttribute(attribute.getLocalName());
+                if (definition != null) {
+                    XmlName xmlName = new XmlName(definition.getName(), AndroidManager.NAMESPACE_KEY);
+                    // TODO converter for formats with multiple alternatives
+                    final AttributeFormat format = definition.getFormat();
+                    Class valueClass = getValueClass(format);
+                    final Converter converter = getConverter(definition);
+                    if (converter == null) {
+                        continue; // TODO investigate - the analysis doesn't terminate if there are extensions with no converter?
+                    }
+                    final DomExtension extension = registrar.registerGenericAttributeValueChildExtension(xmlName, valueClass);
+                    extension.setConverter(converter);
                 }
+
             }
         }
-        return result;
     }
 
-    private static void collectAttributesForClass(String name, Collection<String> result, PsiClass styleableClass) {
-        Pattern pattern = Pattern.compile(name + "_(Layout_)?([a-z][A-Za-z_]+)");
-        for(PsiField field: styleableClass.getFields()) {
-            String fieldName = field.getName();
-            Matcher matcher = pattern.matcher(fieldName);
-            if (matcher.matches()) {
-                result.add(matcher.group(2));
-            }
+    private Class getValueClass(@Nullable AttributeFormat format) {
+        if (format == null) return String.class;
+        switch (format) {
+            case Boolean:
+                return boolean.class;
+            case Integer:
+                return int.class;
+            case Reference:
+                return ResourceValue.class;
+            default:
+                return String.class;
         }
+    }
+
+    @Nullable
+    private Converter getConverter(AttributeDefinition attr) {
+        if (attr.getFormat() == AttributeFormat.Enum) {
+            return new StaticEnumConverter(attr.getValues());
+        }
+        if (attr.getFormat() == AttributeFormat.Reference) {
+            return new ResourceReferenceConverter();
+        }
+        return null;
     }
 
     private synchronized List<String> getViewClasses(Project project) {
