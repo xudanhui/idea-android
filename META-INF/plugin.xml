@@ -3,7 +3,7 @@
     <description>Supports development of Open Handset Alliance Android applications with IntelliJ IDEA</description>
     <version>0.2</version>
     <vendor logo="/icons/android.png">JetBrains</vendor>
-    <idea-version since-build="8890" until-build="8999"/>
+    <idea-version since-build="8890" until-build="9999"/>
     <actions>
         <action id="org.jetbrains.android.actions.CreateActivityAction"
                 class="org.jetbrains.android.actions.CreateActivityAction" text="Activity"
