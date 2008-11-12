@@ -19,7 +19,6 @@ import org.jetbrains.android.dom.attrs.AttributeDefinition;
 import org.jetbrains.android.dom.attrs.AttributeDefinitions;
 import org.jetbrains.android.dom.attrs.AttributeFormat;
 import org.jetbrains.android.dom.attrs.StyleableDefinition;
-import org.jetbrains.android.dom.converters.PsiEnumConverter;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
 import org.jetbrains.android.dom.converters.StaticEnumConverter;
 import org.jetbrains.android.dom.layout.LayoutElement;
@@ -158,7 +157,6 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
 
     static {
         registerDescriptor("background", ResourceValue.class, new ResourceReferenceConverter("drawable"));
-        registerDescriptor("capitalize", String.class, new PsiEnumConverter("android.text.method.TextInputMethod.Capitalize"));
         registerDescriptor("orientation", String.class, new StaticEnumConverter("horizontal", "vertical"));
         registerDescriptor("password", boolean.class, null);
         registerDescriptor("src", ResourceValue.class, new ResourceReferenceConverter("drawable"));
