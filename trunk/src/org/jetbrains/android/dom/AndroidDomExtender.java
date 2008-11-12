@@ -77,7 +77,7 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
             final String ns = attribute.getNamespace();
             if (ns.equals(AndroidManager.NAMESPACE)) {
                 final String localName = attribute.getLocalName();
-                if (ArrayUtil.contains(localName, skipNames)) {
+                if (ArrayUtil.contains(localName, (Object[]) skipNames)) {
                     continue;
                 }
                 final AttributeDefinition definition = styleable.findAttribute(localName);

@@ -40,21 +40,18 @@ public class AttributeDefinitions {
             return null;
         }
         List<AttributeFormat> formats = null;
-        XmlTag[] values = null;
+        XmlTag[] values = tag.findSubTags("enum");
         String format = tag.getAttributeValue("format");
         if (format != null) {
             formats = parseAttrFormat(format);
         }
+        else if (values.length > 0) {
+            formats = Collections.singletonList(AttributeFormat.Enum);
+        }
         else {
-            values = tag.findSubTags("enum");
+            values = tag.findSubTags("flag");
             if (values.length > 0) {
-                formats = Collections.singletonList(AttributeFormat.Enum);
-            }
-            else {
-                values = tag.findSubTags("flag");
-                if (values.length > 0) {
-                    formats = Collections.singletonList(AttributeFormat.Flag);
-                }
+                formats = Collections.singletonList(AttributeFormat.Flag);
             }
         }
         if (formats == null) {
@@ -62,9 +59,7 @@ public class AttributeDefinitions {
             return null;
         }
         AttributeDefinition def = new AttributeDefinition(name, formats);
-        if (values != null) {
-            parseAttrValues(def, values);
-        }
+        parseAttrValues(def, values);
         return def;
     }
 
