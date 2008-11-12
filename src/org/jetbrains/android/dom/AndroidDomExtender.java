@@ -5,8 +5,9 @@ import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.search.searches.ClassInheritorsSearch;
-import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlAttribute;
+import com.intellij.psi.xml.XmlTag;
+import com.intellij.util.ArrayUtil;
 import com.intellij.util.Processor;
 import com.intellij.util.xml.Converter;
 import com.intellij.util.xml.XmlName;
@@ -62,30 +63,34 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
             if (facet != null) {
                 final AttributeDefinitions attrDefs = facet.getManifestAttributeDefinitions();
                 final StyleableDefinition styleable = attrDefs.getStyleableDefinition("AndroidManifestActivity");
-                registerStyleableAttributes(registrar, styleable, androidDomElement.getXmlTag());
+                registerStyleableAttributes(registrar, styleable, androidDomElement.getXmlTag(), "label");
             }
         }
 
         // TODO[yole] return new Object[] {PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT };
     }
 
-    private void registerStyleableAttributes(DomExtensionsRegistrar registrar, StyleableDefinition styleable, XmlTag tag) {
+    private void registerStyleableAttributes(DomExtensionsRegistrar registrar, StyleableDefinition styleable,
+                                             XmlTag tag, String... skipNames) {
         final XmlAttribute[] attributes = tag.getAttributes();
         for (XmlAttribute attribute : attributes) {
             final String ns = attribute.getNamespace();
             if (ns.equals(AndroidManager.NAMESPACE)) {
-                final AttributeDefinition definition = styleable.findAttribute(attribute.getLocalName());
+                final String localName = attribute.getLocalName();
+                if (ArrayUtil.contains(localName, skipNames)) {
+                    continue;
+                }
+                final AttributeDefinition definition = styleable.findAttribute(localName);
                 if (definition != null) {
                     XmlName xmlName = new XmlName(definition.getName(), AndroidManager.NAMESPACE_KEY);
                     // TODO converter for formats with multiple alternatives
                     final AttributeFormat format = definition.getFormat();
                     Class valueClass = getValueClass(format);
                     final Converter converter = getConverter(definition);
-                    if (converter == null) {
-                        continue; // TODO investigate - the analysis doesn't terminate if there are extensions with no converter?
-                    }
                     final DomExtension extension = registrar.registerGenericAttributeValueChildExtension(xmlName, valueClass);
-                    extension.setConverter(converter);
+                    if (converter != null) {
+                        extension.setConverter(converter);
+                    }
                 }
 
             }
