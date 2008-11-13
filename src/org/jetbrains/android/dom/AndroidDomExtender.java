@@ -48,7 +48,19 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
                 if (facet != null) {
                     final AttributeDefinitions attrDefs = facet.getLayoutAttributeDefinitions();
                     final StyleableDefinition styleable = attrDefs.getStyleableDefinition(name);
-                    registerStyleableAttributes(registrar, styleable, tag);
+                    if (styleable != null) {
+                        registerStyleableAttributes(registrar, styleable, tag);
+                    }
+                    else {
+                        // e.g. TimePicker is not listed in attrs.xml
+                        final PsiClass superClass = facet.findWidgetSuperclass(name);
+                        if (superClass != null) {
+                            final StyleableDefinition superStyleable = attrDefs.getStyleableDefinition(superClass.getName());
+                            if (superStyleable != null) {
+                                registerStyleableAttributes(registrar, superStyleable, tag);
+                            }
+                        }
+                    }
                 }
 
                 List<String> viewClasses = getViewClasses(androidDomElement.getManager().getProject());
@@ -69,7 +81,7 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
         // TODO[yole] return new Object[] {PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT };
     }
 
-    private void registerStyleableAttributes(DomExtensionsRegistrar registrar, StyleableDefinition styleable,
+    private void registerStyleableAttributes(DomExtensionsRegistrar registrar, @NotNull StyleableDefinition styleable,
                                              XmlTag tag, String... skipNames) {
         final XmlAttribute[] attributes = tag.getAttributes();
         for (XmlAttribute attribute : attributes) {
