@@ -217,18 +217,23 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     }
 
     private void linkSuperclasses(AttributeDefinitions attributeDefinitions) {
-        JavaPsiFacade facade = JavaPsiFacade.getInstance(getModule().getProject());
         for (String name : attributeDefinitions.getStyleableNames()) {
             final StyleableDefinition definition = attributeDefinitions.getStyleableDefinition(name);
-            PsiClass layoutClass = facade.findClass("android.widget." + name, getModule().getModuleWithDependenciesAndLibrariesScope(false));
-            if (layoutClass != null) {
-                layoutClass = layoutClass.getSuperClass();
-                if (layoutClass != null) {
-                    StyleableDefinition superclassDefinition = attributeDefinitions.getStyleableDefinition(layoutClass.getName());
-                    definition.setSuperclass(superclassDefinition);
-                }
+            final PsiClass superClass = findWidgetSuperclass(name);
+            if (superClass != null) {
+                StyleableDefinition superclassDefinition = attributeDefinitions.getStyleableDefinition(superClass.getName());
+                definition.setSuperclass(superclassDefinition);
             }
         }
+    }
+
+    public PsiClass findWidgetSuperclass(String name) {
+        JavaPsiFacade facade = JavaPsiFacade.getInstance(getModule().getProject());
+        PsiClass layoutClass = facade.findClass("android.widget." + name, getModule().getModuleWithDependenciesAndLibrariesScope(false));
+        if (layoutClass != null) {
+            return layoutClass.getSuperClass();
+        }
+        return null;
     }
 
     private AttributeDefinitions parseAttributeDefinitions(String fileName) {
