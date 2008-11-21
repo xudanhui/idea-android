@@ -74,7 +74,7 @@ public class AndroidDexCompiler implements ClassPostProcessingCompiler {
                     CompilerModuleExtension extension = CompilerModuleExtension.getInstance(module);
                     VirtualFile outputPath = extension.getCompilerOutputPath();
                     AndroidFacetConfiguration configuration = facet.getConfiguration();
-                    items.add(new DexItem(module, outputPath, configuration.SDK_PATH));
+                    items.add(new DexItem(module, outputPath, configuration.getSdkPath()));
                 }
             }
             return items.toArray(new ProcessingItem[items.size()]);

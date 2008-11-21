@@ -13,7 +13,10 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.xml.DomElement;
 import com.intellij.util.xml.DomFileElement;
@@ -88,7 +91,7 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     }
 
     public String getSdkPath() {
-        return getConfiguration().SDK_PATH;
+        return getConfiguration().getSdkPath();
     }
 
     public String getOutputPackage() {

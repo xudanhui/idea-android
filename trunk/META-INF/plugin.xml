@@ -4,6 +4,12 @@
     <version>0.2</version>
     <vendor logo="/icons/android.png">JetBrains</vendor>
     <idea-version since-build="8890" until-build="9999"/>
+    <application-components>
+        <component>
+            <implementation-class>org.jetbrains.android.AndroidPlugin</implementation-class>
+            <interface-class>org.jetbrains.android.AndroidPlugin</interface-class>
+        </component>
+    </application-components>
     <actions>
         <action id="org.jetbrains.android.actions.CreateActivityAction"
                 class="org.jetbrains.android.actions.CreateActivityAction" text="Activity"

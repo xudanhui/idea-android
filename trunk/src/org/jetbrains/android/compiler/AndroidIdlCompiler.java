@@ -136,7 +136,7 @@ public class AndroidIdlCompiler implements SourceGeneratingCompiler {
                     Module module = myContext.getModuleByFile(file);
                     AndroidFacet facet = FacetManager.getInstance(module).getFacetByType(AndroidFacet.ID);
                     if (facet != null) {
-                        String sdkPath = facet.getConfiguration().SDK_PATH;
+                        String sdkPath = facet.getConfiguration().getSdkPath();
                         IdlGenerationItem generationItem = new IdlGenerationItem(module, file, fileIndex.isInTestSourceContent(file), sdkPath);
                         if (myContext.isMake()) {
                             File generatedFile = generationItem.getGeneratedFile();

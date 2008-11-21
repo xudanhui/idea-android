@@ -1,5 +1,7 @@
 package org.jetbrains.android.run;
 
+import com.intellij.debugger.impl.GenericDebuggerRunnerSettings;
+import com.intellij.debugger.settings.DebuggerSettings;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
@@ -99,15 +101,27 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration<JavaRunCon
         if (facet == null) {
             throw new ExecutionException("No Android facet found for module");
         }
-        final ApplicationRunner runner = new ApplicationRunner(facet, ACTIVITY_CLASS);
+        RunnerSettings settings = executionEnvironment.getRunnerSettings();
+        boolean debugMode = settings != null && settings.getData() instanceof GenericDebuggerRunnerSettings;
+        final ApplicationRunner runner = new ApplicationRunner(facet, ACTIVITY_CLASS, debugMode);
         runner.run();
-        class MyState extends CommandLineState {
+        if (debugMode) {
+            GenericDebuggerRunnerSettings debuggerSettings = (GenericDebuggerRunnerSettings) settings.getData();
+            debuggerSettings.LOCAL = false;
+            debuggerSettings.setDebugPort(runner.getDebugPort());
+            debuggerSettings.setTransport(DebuggerSettings.SOCKET_TRANSPORT);
+        }
+        class MyState extends CommandLineState implements RemoteState {
             protected MyState() {
                 super(executionEnvironment);
             }
 
             protected OSProcessHandler startProcess() throws ExecutionException {
                 return runner.getProcessHandler();
+            }
+
+            public RemoteConnection getRemoteConnection() {
+                return new RemoteConnection(true, "localhost", runner.getDebugPort(), false);
             }
         }
         MyState state = new MyState();

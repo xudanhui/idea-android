@@ -41,7 +41,7 @@ public class AndroidPackagingCompiler implements PackagingCompiler {
                     String tempOutputPath = new File(outputDir.getPath(), module.getName() + ".apk.tmp").getPath();
                     String outputPath = new File(outputDir.getPath(), module.getName() + ".apk").getPath();
                     String classesDexPath = new File(outputDir.getPath(), AndroidManager.CLASSES_FILE_NAME).getPath();
-                    items.add(new AptPackagingItem(module, manifestFile, configuration.SDK_PATH, resourcesDir.getPath(),
+                    items.add(new AptPackagingItem(module, manifestFile, configuration.getSdkPath(), resourcesDir.getPath(),
                             tempOutputPath, outputPath, classesDexPath));
                 }
             }

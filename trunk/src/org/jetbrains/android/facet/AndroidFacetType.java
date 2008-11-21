@@ -29,7 +29,7 @@ public class AndroidFacetType extends FacetType<AndroidFacet, AndroidFacetConfig
     public AndroidFacetConfiguration createDefaultConfiguration() {
         AndroidFacetConfiguration configuration = new AndroidFacetConfiguration();
         if (PropertiesComponent.getInstance().isValueSet(AndroidFacetConfiguration.DEFAULT_SDK_PATH_PROPERTY)) {
-            configuration.SDK_PATH = PropertiesComponent.getInstance().getValue(AndroidFacetConfiguration.DEFAULT_SDK_PATH_PROPERTY); 
+            configuration.setSdkPath( PropertiesComponent.getInstance().getValue(AndroidFacetConfiguration.DEFAULT_SDK_PATH_PROPERTY)); 
         }
         return configuration;
     }
