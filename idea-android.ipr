@@ -466,6 +466,60 @@
     <option name="myReportErrorsAsWarnings" value="true" />
   </component>
   <component name="SvnBranchConfigurationManager">
+    <option name="myConfigurationMap">
+      <map>
+        <entry key="$PROJECT_DIR$">
+          <value>
+            <SvnBranchConfiguration>
+              <option name="branchMap">
+                <map>
+                  <entry key="https://idea-android.googlecode.com/svn/branches">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1224619822774" />
+                          <option name="revision" value="79" />
+                          <option name="url" value="https://idea-android.googlecode.com/svn/branches/selena" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="https://idea-android.googlecode.com/svn/tags">
+                    <value>
+                      <list />
+                    </value>
+                  </entry>
+                  <entry key="https://idea-android.googlecode.com/svn/wiki">
+                    <value>
+                      <list>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1195508756320" />
+                          <option name="revision" value="66" />
+                          <option name="url" value="https://idea-android.googlecode.com/svn/wiki/GettingStarted.wiki" />
+                        </SvnBranchItem>
+                        <SvnBranchItem>
+                          <option name="creationDateMillis" value="1195423099560" />
+                          <option name="revision" value="52" />
+                          <option name="url" value="https://idea-android.googlecode.com/svn/wiki/DevelopmentNotes.wiki" />
+                        </SvnBranchItem>
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="branchUrls">
+                <list>
+                  <option value="https://idea-android.googlecode.com/svn/branches" />
+                  <option value="https://idea-android.googlecode.com/svn/tags" />
+                  <option value="https://idea-android.googlecode.com/svn/wiki" />
+                </list>
+              </option>
+              <option name="trunkUrl" value="https://idea-android.googlecode.com/svn/trunk" />
+            </SvnBranchConfiguration>
+          </value>
+        </entry>
+      </map>
+    </option>
     <option name="myVersion" value="124" />
   </component>
   <component name="SvnChangesBrowserSettings">

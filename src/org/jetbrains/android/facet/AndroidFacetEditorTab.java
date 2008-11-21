@@ -35,17 +35,17 @@ public class AndroidFacetEditorTab extends FacetEditorTab {
     }
 
     public boolean isModified() {
-        return !Comparing.strEqual(mySdkPathField.getText(), myConfiguration.SDK_PATH, true);
+        return !Comparing.strEqual(mySdkPathField.getText(), myConfiguration.getSdkPath(), true);
     }
 
     public void apply() throws ConfigurationException {
-        myConfiguration.SDK_PATH = mySdkPathField.getText();
+        myConfiguration.setSdkPath(mySdkPathField.getText());
         PropertiesComponent.getInstance().setValue(AndroidFacetConfiguration.DEFAULT_SDK_PATH_PROPERTY,
-                myConfiguration.SDK_PATH);
+                myConfiguration.getSdkPath());
     }
 
     public void reset() {
-        mySdkPathField.setText(myConfiguration.SDK_PATH);
+        mySdkPathField.setText(myConfiguration.getSdkPath());
     }
 
     public void disposeUIResources() {
