@@ -16,7 +16,7 @@
         </CLASSES>
         <JAVADOC />
         <SOURCES>
-          <root url="jar://$MODULE_DIR$/lib/src/ddmlib_src.zip!/ddmlib/src" />
+          <root url="jar://$MODULE_DIR$/lib/src/ddmlib_src.zip!/src" />
         </SOURCES>
       </library>
     </orderEntry>

@@ -35,13 +35,18 @@ public class ApplicationRunner {
 
     private OSProcessHandler emulatorHandler;
 
+    private static boolean ddmLibInitialized;
+
     public ApplicationRunner(AndroidFacet facet, String activityName) {
         this.activityName = activityName;
         this.facet = facet;
     }
 
     public void run() throws ExecutionException {
-        AndroidDebugBridge.init(false);
+        if (!ddmLibInitialized) {
+            AndroidDebugBridge.init(true);
+            ddmLibInitialized = true;
+        }
         final AndroidDebugBridge.IDeviceChangeListener deviceChangeListener = new AndroidDebugBridge.IDeviceChangeListener() {
             boolean installed = false;
 
