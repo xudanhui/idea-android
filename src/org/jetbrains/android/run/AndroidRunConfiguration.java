@@ -1,12 +1,10 @@
 package org.jetbrains.android.run;
 
 import com.intellij.debugger.impl.GenericDebuggerRunnerSettings;
-import com.intellij.debugger.settings.DebuggerSettings;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
-import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.facet.FacetManager;
 import com.intellij.openapi.module.Module;
@@ -103,29 +101,31 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration<JavaRunCon
         }
         RunnerSettings settings = executionEnvironment.getRunnerSettings();
         boolean debugMode = settings != null && settings.getData() instanceof GenericDebuggerRunnerSettings;
-        final ApplicationRunner runner = new ApplicationRunner(facet, ACTIVITY_CLASS, debugMode);
-        runner.run();
-        if (debugMode) {
-            GenericDebuggerRunnerSettings debuggerSettings = (GenericDebuggerRunnerSettings) settings.getData();
-            debuggerSettings.LOCAL = false;
-            debuggerSettings.setDebugPort(runner.getDebugPort());
-            debuggerSettings.setTransport(DebuggerSettings.SOCKET_TRANSPORT);
-        }
-        class MyState extends CommandLineState implements RemoteState {
-            protected MyState() {
-                super(executionEnvironment);
-            }
-
-            protected OSProcessHandler startProcess() throws ExecutionException {
-                return runner.getProcessHandler();
-            }
-
-            public RemoteConnection getRemoteConnection() {
-                return new RemoteConnection(true, "localhost", runner.getDebugPort(), false);
-            }
-        }
-        MyState state = new MyState();
-        state.setConsoleBuilder(TextConsoleBuilderFactory.getInstance().createBuilder(getProject()));
-        return state;
+        final AndroidRunningState runner = new AndroidRunningState(executionEnvironment, facet, ACTIVITY_CLASS);
+        //runner.launchDebug();
+//        if (debugMode) {
+//            GenericDebuggerRunnerSettings debuggerSettings = (GenericDebuggerRunnerSettings) settings.getData();
+//            debuggerSettings.LOCAL = false;
+//            debuggerSettings.setDebugPort(runner.getDebugPort());
+//            debuggerSettings.setTransport(DebuggerSettings.SOCKET_TRANSPORT);
+//        }
+//        class DebugState extends CommandLineState implements RemoteState {
+//            protected DebugState() {
+//                super(executionEnvironment);
+//            }
+//
+//            protected OSProcessHandler startProcess() throws ExecutionException {
+//                return runner.getProcessHandler();
+//            }
+//
+//            public RemoteConnection getRemoteConnection() {
+//                return new RemoteConnection(true, "localhost", runner.getDebugPort(), false);
+//            }
+//        }
+//        DebugState state = new DebugState();
+//        state.setConsoleBuilder(TextConsoleBuilderFactory.getInstance().createBuilder(getProject()));
+//        return state;
+        runner.setConsoleBuilder(TextConsoleBuilderFactory.getInstance().createBuilder(getProject()));
+        return runner;
     }
 }
