@@ -35,7 +35,7 @@ public class AndroidRunConfigurationType implements ConfigurationType {
     }
 
     public String getConfigurationTypeDescription() {
-        return "Android run configuration";
+        return "Android launchDebug configuration";
     }
 
     public Icon getIcon() {

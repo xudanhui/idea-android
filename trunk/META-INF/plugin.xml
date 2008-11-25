@@ -32,6 +32,7 @@
         <lang.findUsagesProvider language="AIDL" implementationClass="com.intellij.lang.java.JavaFindUsagesProvider"/>
 
         <configurationType implementation="org.jetbrains.android.run.AndroidRunConfigurationType"/>
+        <programRunner implementation="org.jetbrains.android.run.AndroidDebugRunner"/>
         <inspectionToolProvider implementation="org.jetbrains.android.AndroidInspectionToolProvider"/>
         <facetType implementation="org.jetbrains.android.facet.AndroidFacetType"/>
         <fileTemplateGroup implementation="org.jetbrains.android.AndroidFileTemplateProvider"/>
@@ -40,5 +41,6 @@
         <compiler implementation="org.jetbrains.android.compiler.AndroidIdlCompiler"/>
         <compiler implementation="org.jetbrains.android.compiler.AndroidDexCompiler"/>
         <compiler implementation="org.jetbrains.android.compiler.AndroidPackagingCompiler"/>
+        
     </extensions>
 </idea-plugin>
