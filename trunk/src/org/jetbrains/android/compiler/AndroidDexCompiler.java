@@ -54,7 +54,7 @@ public class AndroidDexCompiler implements ClassPostProcessingCompiler {
     }
 
     public ValidityState createValidityState(DataInput is) throws IOException {
-        return null;
+        return new EmptyValidityState();
     }
 
     private final class PrepareAction implements Computable<ProcessingItem[]> {
@@ -140,7 +140,7 @@ public class AndroidDexCompiler implements ClassPostProcessingCompiler {
 
         @Nullable
         public ValidityState getValidityState() {
-            return null;
+            return new EmptyValidityState();
         }
 
         public String getSdkPath() {
