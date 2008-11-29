@@ -11,7 +11,6 @@ import static com.intellij.execution.process.ProcessOutputTypes.STDOUT;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.util.Key;
 import org.jetbrains.android.dom.manifest.Manifest;
 import org.jetbrains.android.facet.AndroidFacet;
 
@@ -98,16 +97,16 @@ public class AndroidRunningState extends CommandLineState {
             boolean installed = false;
 
             public void deviceConnected(Device device) {
-                printText("Device connected.\n", STDOUT);
+                processHandler.notifyTextAvailable("Device connected.\n", STDOUT);
             }
 
             public void deviceDisconnected(Device device) {
-                printText("Device disconnected.\n", STDOUT);
+                processHandler.notifyTextAvailable("Device disconnected.\n", STDOUT);
             }
 
             public void deviceChanged(final Device device, int changeMask) {
                 if (!installed && device.isOnline()) {
-                    printText("Device is online.\n", STDOUT);
+                    processHandler.notifyTextAvailable("Device is online.\n", STDOUT);
                     installed = true;
                     new Thread(new Runnable() {
                         public void run() {
@@ -135,7 +134,7 @@ public class AndroidRunningState extends CommandLineState {
             }
         };
         AndroidDebugBridge.addClientChangeListener(clientChangeListener);
-        this.processHandler.addProcessListener(new ProcessAdapter() {
+        processHandler.addProcessListener(new ProcessAdapter() {
             @Override
             public void processWillTerminate(ProcessEvent event, boolean willBeDestroyed) {
                 AndroidDebugBridge.removeDeviceChangeListener(deviceChangeListener);
@@ -173,29 +172,25 @@ public class AndroidRunningState extends CommandLineState {
 
     private boolean uploadApp(Device device, String remotePath, String localPath) {
         if (stopped) return false;
-        this.printText("Uploading file\n\tlocal path: " + localPath + "\n\tremote path: "
+        processHandler.notifyTextAvailable("Uploading file\n\tlocal path: " + localPath + "\n\tremote path: "
                 + remotePath + '\n', STDOUT);
         SyncService service = device.getSyncService();
         if (service == null) {
-            printText("Can't upload file: device is not available.\n", STDERR);
+            processHandler.notifyTextAvailable("Can't upload file: device is not available.\n", STDERR);
             return false;
         }
         SyncService.SyncResult result = service.pushFile(localPath, remotePath,
                 SyncService.getNullProgressMonitor());
         if (result.getCode() != SyncService.RESULT_OK) {
-            printText("Can't upload file: " + result.getMessage() + ".\n", STDERR);
+            processHandler.notifyTextAvailable("Can't upload file: " + result.getMessage() + ".\n", STDERR);
             return false;
         }
         return true;
     }
 
-    private void printText(String message, Key outputType) {
-        this.processHandler.notifyTextAvailable(message, outputType);
-    }
-
     private synchronized boolean launchApp(final Device device, final String packageName) {
         final String activityPath = packageName + '/' + activityName;
-        this.printText("Launching application: " + activityPath + ".\n", STDOUT);
+        processHandler.notifyTextAvailable("Launching application: " + activityPath + ".\n", STDOUT);
         MyReceiver receiver = new MyReceiver();
         int attemptCount = 0;
         while (true) {
@@ -204,12 +199,12 @@ public class AndroidRunningState extends CommandLineState {
                 device.executeShellCommand("am start " + (debugMode ? "-D " : "") +
                         "-n \"" + activityPath + "\"", receiver);
             } catch (IOException e) {
-                this.printText("Can't launch application (I/O error).\n", STDERR);
+                processHandler.notifyTextAvailable("Can't launch application (I/O error).\n", STDERR);
             }
             if (receiver.errorType != 2 || attemptCount >= MAX_LAUNCHING_ATTEMPT_COUNT) {
                 break;
             }
-            this.printText("Device is not ready. Waiting for " + WAITING_TIME + " sec.\n", STDOUT);
+            processHandler.notifyTextAvailable("Device is not ready. Waiting for " + WAITING_TIME + " sec.\n", STDOUT);
             try {
                 wait(WAITING_TIME * 1000);
             } catch (InterruptedException e) {
@@ -218,19 +213,15 @@ public class AndroidRunningState extends CommandLineState {
         }
         boolean success = receiver.errorType == -1;
         if (success) {
-            this.printText(receiver.output.toString(), STDOUT);
+            processHandler.notifyTextAvailable(receiver.output.toString(), STDOUT);
         } else {
-            this.printText(receiver.output.toString(), STDERR);
+            processHandler.notifyTextAvailable(receiver.output.toString(), STDERR);
         }
         return success;
     }
 
-    public void notifyTextAvailable(String text, Key outputKey) {
-        processHandler.notifyTextAvailable(text, outputKey);
-    }
-
     private synchronized boolean installApp(Device device, String remotePath) {
-        printText("Installing application.\n", STDOUT);
+        processHandler.notifyTextAvailable("Installing application.\n", STDOUT);
         int attemptCount = 0;
         MyReceiver receiver = new MyReceiver();
         while (true) {
@@ -238,13 +229,13 @@ public class AndroidRunningState extends CommandLineState {
             try {
                 device.executeShellCommand("pm install \"" + remotePath + "\"", receiver);
             } catch (IOException e) {
-                printText("Can't install application (I/O error).\n", STDERR);
+                processHandler.notifyTextAvailable("Can't install application (I/O error).\n", STDERR);
                 return false;
             }
             if (receiver.errorType != 1 || attemptCount >= MAX_INSTALLATION_ATTEMPT_COUNT) {
                 break;
             }
-            this.printText("Device is not ready. Waiting for " + WAITING_TIME + " sec.\n", STDOUT);
+            processHandler.notifyTextAvailable("Device is not ready. Waiting for " + WAITING_TIME + " sec.\n", STDOUT);
             attemptCount++;
             try {
                 wait(WAITING_TIME * 1000);
@@ -255,16 +246,16 @@ public class AndroidRunningState extends CommandLineState {
         if (receiver.failureMessage != null && receiver.failureMessage.equals("INSTALL_FAILED_ALREADY_EXISTS")) {
             if (stopped) return false;
             receiver = new MyReceiver();
-            printText("Application is already installed. Reinstalling.\n", STDOUT);
+            processHandler.notifyTextAvailable("Application is already installed. Reinstalling.\n", STDOUT);
             try {
                 device.executeShellCommand("pm install -r \"" + remotePath + '\"', receiver);
             } catch (IOException e) {
-                printText("Can't reinstall application (I/O error).\n", STDERR);
+                processHandler.notifyTextAvailable("Can't reinstall application (I/O error).\n", STDERR);
                 return false;
             }
         }
         boolean success = receiver.errorType == -1 && receiver.failureMessage == null;
-        printText(receiver.output.toString(), success ? STDOUT : STDERR);
+        processHandler.notifyTextAvailable(receiver.output.toString(), success ? STDOUT : STDERR);
         return success;
     }
 }
