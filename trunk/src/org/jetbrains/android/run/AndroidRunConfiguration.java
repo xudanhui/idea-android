@@ -1,6 +1,5 @@
 package org.jetbrains.android.run;
 
-import com.intellij.debugger.impl.GenericDebuggerRunnerSettings;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
@@ -100,34 +99,9 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration<JavaRunCon
         if (facet == null) {
             throw new ExecutionException("No Android facet found for module");
         }
-        RunnerSettings settings = executionEnvironment.getRunnerSettings();
-        boolean debugMode = settings != null && settings.getData() instanceof GenericDebuggerRunnerSettings;
         AndroidRunningState state = new AndroidRunningState(executionEnvironment, facet, ACTIVITY_CLASS);
         TextConsoleBuilder builder = TextConsoleBuilderFactory.getInstance().createBuilder(getProject());
         state.setConsoleBuilder(builder);
-        //state.launchDebug();
-//        if (debugMode) {
-//            GenericDebuggerRunnerSettings debuggerSettings = (GenericDebuggerRunnerSettings) settings.getData();
-//            debuggerSettings.LOCAL = false;
-//            debuggerSettings.setDebugPort(state.getDebugPort());
-//            debuggerSettings.setTransport(DebuggerSettings.SOCKET_TRANSPORT);
-//        }
-//        class DebugState extends CommandLineState implements RemoteState {
-//            protected DebugState() {
-//                super(executionEnvironment);
-//            }
-//
-//            protected OSProcessHandler startProcess() throws ExecutionException {
-//                return state.getProcessHandler();
-//            }
-//
-//            public RemoteConnection getRemoteConnection() {
-//                return new RemoteConnection(true, "localhost", state.getDebugPort(), false);
-//            }
-//        }
-//        DebugState state = new DebugState();
-//        state.setConsoleBuilder(TextConsoleBuilderFactory.getInstance().createBuilder(getProject()));
-//        return state;
         return state;
     }
 }

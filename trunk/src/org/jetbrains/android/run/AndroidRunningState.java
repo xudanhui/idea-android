@@ -35,8 +35,6 @@ public class AndroidRunningState extends CommandLineState {
 
     private boolean stopped;
     private OSProcessHandler processHandler;
-    private Process emulatorProcess;
-    private ProcessSurrogate processSurrogate;
 
     public void setDebugMode(boolean debugMode) {
         this.debugMode = debugMode;
@@ -152,21 +150,17 @@ public class AndroidRunningState extends CommandLineState {
 
     private void launchEmulator() throws ExecutionException {
         String emulatorPath = facet.getConfiguration().getToolPath("emulator");
+        Process process;
         try {
-            emulatorProcess = Runtime.getRuntime().exec(emulatorPath);
+            process = Runtime.getRuntime().exec(emulatorPath);
         } catch (IOException e) {
             throw new ExecutionException("Can't launch android emulator (I/O error)");
         }
-        processSurrogate = new ProcessSurrogate(emulatorProcess);
-        processHandler = new OSProcessHandler(processSurrogate, "");
+        processHandler = new OSProcessHandler(process, "");
     }
 
-    public Process getEmulatorProcess() {
-        return emulatorProcess;
-    }
-
-    public ProcessSurrogate getProcessSurrogate() {
-        return processSurrogate;
+    public OSProcessHandler getProcessHandler() {
+        return processHandler;
     }
 
     private boolean prepareAndStart(Device device) {

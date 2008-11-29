@@ -4,9 +4,11 @@ import com.intellij.debugger.ui.DebuggerPanelsManager;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.Executor;
+import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessHandler;
 import static com.intellij.execution.process.ProcessOutputTypes.STDERR;
 import com.intellij.execution.runners.DefaultProgramRunner;
 import com.intellij.execution.runners.ExecutionEnvironment;
@@ -42,7 +44,7 @@ public class AndroidDebugRunner extends DefaultProgramRunner {
 
         protected OSProcessHandler startProcess() throws ExecutionException {
             setConsoleBuilder(TextConsoleBuilderFactory.getInstance().createBuilder(project));
-            return new OSProcessHandler(runState.getEmulatorProcess(), "");
+            return new OSProcessHandler(runState.getProcessHandler().getProcess(), "");
         }
     }
 
@@ -65,24 +67,26 @@ public class AndroidDebugRunner extends DefaultProgramRunner {
                     public void run() {
                         final DebuggerPanelsManager manager = DebuggerPanelsManager.getInstance(project);
                         final DebugState st = new DebugState(environment, runState, debugPort, project);
+                        RunContentDescriptor debugDescriptor = null;
                         try {
-                            runState.getProcessSurrogate().unbend();
-                            final RunContentDescriptor debugDescriptor = manager.attachVirtualMachine(executor, AndroidDebugRunner.this,
+                            runState.getProcessHandler().detachProcess();
+                            debugDescriptor = manager.attachVirtualMachine(executor, AndroidDebugRunner.this,
                                     environment, st, contentToReuse, st.getRemoteConnection(), false);
-                            if (debugDescriptor == null) {
-                                runState.notifyTextAvailable("Can't start debugging.", STDERR);
-                                return;
-                            }
-                            ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
-                            ContentManager contentManager = toolWindowManager.getToolWindow(executor.getToolWindowId()).getContentManager();
-                            Content content = contentManager.getContent(runDescriptor.getComponent());
-                            debugDescriptor.setAttachedContent(content);
-                            RunContentManager runContentManager = ExecutionManager.getInstance(project).getContentManager();
-                            runContentManager.showRunContent(executor, debugDescriptor);
-                            debugDescriptor.getProcessHandler().startNotify();
                         } catch (ExecutionException e) {
                             runState.notifyTextAvailable("ExecutionException: " + e.getMessage() + '.', STDERR);
                         }
+                        ProcessHandler handler = debugDescriptor != null ? debugDescriptor.getProcessHandler() : null;
+                        if (debugDescriptor == null || handler == null) {
+                            runState.notifyTextAvailable("Can't start debugging.", STDERR);
+                            return;
+                        }
+                        ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
+                        ContentManager contentManager = toolWindowManager.getToolWindow(executor.getToolWindowId()).getContentManager();
+                        Content content = contentManager.getContent(runDescriptor.getComponent());
+                        debugDescriptor.setAttachedContent(content);
+                        RunContentManager runContentManager = ExecutionManager.getInstance(project).getContentManager();
+                        runContentManager.showRunContent(executor, debugDescriptor);
+                        handler.startNotify();
                     }
                 });
             }
@@ -96,6 +100,6 @@ public class AndroidDebugRunner extends DefaultProgramRunner {
     }
 
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        return true;
+        return DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof AndroidRunningState;
     }
 }
