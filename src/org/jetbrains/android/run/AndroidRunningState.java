@@ -33,13 +33,10 @@ public class AndroidRunningState extends CommandLineState {
     private boolean debugMode;
     private DebugLauncher debugLauncher;
 
-    private OSProcessHandler emulatorHandler;
     private boolean stopped;
-
-    protected OSProcessHandler startProcess() throws ExecutionException {
-        run();
-        return emulatorHandler;
-    }
+    private OSProcessHandler processHandler;
+    private Process emulatorProcess;
+    private ProcessSurrogate processSurrogate;
 
     public void setDebugMode(boolean debugMode) {
         this.debugMode = debugMode;
@@ -47,6 +44,11 @@ public class AndroidRunningState extends CommandLineState {
 
     public void setDebugLauncher(DebugLauncher debugLauncher) {
         this.debugLauncher = debugLauncher;
+    }
+
+    protected OSProcessHandler startProcess() throws ExecutionException {
+        run();
+        return processHandler;
     }
 
     private static class MyReceiver extends MultiLineReceiver {
@@ -77,8 +79,8 @@ public class AndroidRunningState extends CommandLineState {
         }
     }
 
-    public AndroidRunningState(ExecutionEnvironment env, AndroidFacet facet, String activityName) throws ExecutionException {
-        super(env);
+    public AndroidRunningState(ExecutionEnvironment environment, AndroidFacet facet, String activityName) throws ExecutionException {
+        super(environment);
         this.activityName = activityName;
         this.facet = facet;
         final Manifest manifest = facet.getManifest();
@@ -112,7 +114,7 @@ public class AndroidRunningState extends CommandLineState {
                     new Thread(new Runnable() {
                         public void run() {
                             if (!prepareAndStart(device) && !stopped) {
-                                emulatorHandler.destroyProcess();
+                                AndroidRunningState.this.processHandler.destroyProcess();
                             }
                         }
                     }).start();
@@ -135,7 +137,7 @@ public class AndroidRunningState extends CommandLineState {
             }
         };
         AndroidDebugBridge.addClientChangeListener(clientChangeListener);
-        emulatorHandler.addProcessListener(new ProcessAdapter() {
+        this.processHandler.addProcessListener(new ProcessAdapter() {
             @Override
             public void processWillTerminate(ProcessEvent event, boolean willBeDestroyed) {
                 AndroidDebugBridge.removeDeviceChangeListener(deviceChangeListener);
@@ -148,19 +150,23 @@ public class AndroidRunningState extends CommandLineState {
         });
     }
 
-    public OSProcessHandler getProcessHandler() {
-        return emulatorHandler;
-    }
-
     private void launchEmulator() throws ExecutionException {
         String emulatorPath = facet.getConfiguration().getToolPath("emulator");
-        Process process;
         try {
-            process = Runtime.getRuntime().exec(emulatorPath);
+            emulatorProcess = Runtime.getRuntime().exec(emulatorPath);
         } catch (IOException e) {
             throw new ExecutionException("Can't launch android emulator (I/O error)");
         }
-        emulatorHandler = new OSProcessHandler(process, "");
+        processSurrogate = new ProcessSurrogate(emulatorProcess);
+        processHandler = new OSProcessHandler(processSurrogate, "");
+    }
+
+    public Process getEmulatorProcess() {
+        return emulatorProcess;
+    }
+
+    public ProcessSurrogate getProcessSurrogate() {
+        return processSurrogate;
     }
 
     private boolean prepareAndStart(Device device) {
@@ -190,7 +196,7 @@ public class AndroidRunningState extends CommandLineState {
     }
 
     private void printText(String message, Key outputType) {
-        emulatorHandler.notifyTextAvailable(message, outputType);
+        this.processHandler.notifyTextAvailable(message, outputType);
     }
 
     private synchronized boolean launchApp(final Device device, final String packageName) {
@@ -223,6 +229,10 @@ public class AndroidRunningState extends CommandLineState {
             this.printText(receiver.output.toString(), STDERR);
         }
         return success;
+    }
+
+    public void notifyTextAvailable(String text, Key outputKey) {
+        processHandler.notifyTextAvailable(text, outputKey);
     }
 
     private synchronized boolean installApp(Device device, String remotePath) {
