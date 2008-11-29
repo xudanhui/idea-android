@@ -4,6 +4,7 @@ import com.intellij.debugger.impl.GenericDebuggerRunnerSettings;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
+import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.facet.FacetManager;
@@ -101,12 +102,14 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration<JavaRunCon
         }
         RunnerSettings settings = executionEnvironment.getRunnerSettings();
         boolean debugMode = settings != null && settings.getData() instanceof GenericDebuggerRunnerSettings;
-        final AndroidRunningState runner = new AndroidRunningState(executionEnvironment, facet, ACTIVITY_CLASS);
-        //runner.launchDebug();
+        AndroidRunningState state = new AndroidRunningState(executionEnvironment, facet, ACTIVITY_CLASS);
+        TextConsoleBuilder builder = TextConsoleBuilderFactory.getInstance().createBuilder(getProject());
+        state.setConsoleBuilder(builder);
+        //state.launchDebug();
 //        if (debugMode) {
 //            GenericDebuggerRunnerSettings debuggerSettings = (GenericDebuggerRunnerSettings) settings.getData();
 //            debuggerSettings.LOCAL = false;
-//            debuggerSettings.setDebugPort(runner.getDebugPort());
+//            debuggerSettings.setDebugPort(state.getDebugPort());
 //            debuggerSettings.setTransport(DebuggerSettings.SOCKET_TRANSPORT);
 //        }
 //        class DebugState extends CommandLineState implements RemoteState {
@@ -115,17 +118,16 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration<JavaRunCon
 //            }
 //
 //            protected OSProcessHandler startProcess() throws ExecutionException {
-//                return runner.getProcessHandler();
+//                return state.getProcessHandler();
 //            }
 //
 //            public RemoteConnection getRemoteConnection() {
-//                return new RemoteConnection(true, "localhost", runner.getDebugPort(), false);
+//                return new RemoteConnection(true, "localhost", state.getDebugPort(), false);
 //            }
 //        }
 //        DebugState state = new DebugState();
 //        state.setConsoleBuilder(TextConsoleBuilderFactory.getInstance().createBuilder(getProject()));
 //        return state;
-        runner.setConsoleBuilder(TextConsoleBuilderFactory.getInstance().createBuilder(getProject()));
-        return runner;
+        return state;
     }
 }
