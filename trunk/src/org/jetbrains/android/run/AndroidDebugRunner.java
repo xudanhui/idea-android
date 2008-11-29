@@ -69,17 +69,18 @@ public class AndroidDebugRunner extends DefaultProgramRunner {
                         final DebugState st = new DebugState(environment, runState, debugPort, project);
                         RunContentDescriptor debugDescriptor = null;
                         try {
-                            runState.getProcessHandler().detachProcess();
                             debugDescriptor = manager.attachVirtualMachine(executor, AndroidDebugRunner.this,
                                     environment, st, contentToReuse, st.getRemoteConnection(), false);
                         } catch (ExecutionException e) {
-                            runState.notifyTextAvailable("ExecutionException: " + e.getMessage() + '.', STDERR);
+                            runState.getProcessHandler().notifyTextAvailable("ExecutionException: " + e.getMessage() + '.', STDERR);
                         }
                         ProcessHandler handler = debugDescriptor != null ? debugDescriptor.getProcessHandler() : null;
                         if (debugDescriptor == null || handler == null) {
-                            runState.notifyTextAvailable("Can't start debugging.", STDERR);
+                            runState.getProcessHandler().notifyTextAvailable("Can't start debugging.", STDERR);
+                            runState.getProcessHandler().destroyProcess();
                             return;
                         }
+                        runState.getProcessHandler().detachProcess();
                         ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(project);
                         ContentManager contentManager = toolWindowManager.getToolWindow(executor.getToolWindowId()).getContentManager();
                         Content content = contentManager.getContent(runDescriptor.getComponent());
@@ -100,6 +101,6 @@ public class AndroidDebugRunner extends DefaultProgramRunner {
     }
 
     public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-        return DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof AndroidRunningState;
+        return DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) && profile instanceof AndroidRunConfiguration;
     }
 }
