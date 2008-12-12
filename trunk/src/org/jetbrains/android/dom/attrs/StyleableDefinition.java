@@ -9,14 +9,34 @@ import java.util.Map;
  * @author yole
  */
 public class StyleableDefinition {
-    private String myName;
-    private StyleableDefinition myParent;
+    private final String myName;
+    private List<StyleableDefinition> parents = new ArrayList<StyleableDefinition>();
     private StyleableDefinition mySuperclass;
     private final Map<String, AttributeDefinition> myAttributes = new HashMap<String, AttributeDefinition>();
+    private List<StyleableDefinition> children = new ArrayList<StyleableDefinition>();
 
-    public StyleableDefinition(String name, StyleableDefinition parent) {
+    public StyleableDefinition(String name) {
         myName = name;
-        myParent = parent;
+    }
+
+    public void addChild(StyleableDefinition child) {
+        children.add(child);
+    }
+
+    public void addParent(StyleableDefinition parent) {
+        parents.add(parent);
+    }
+
+    public List<StyleableDefinition> getParents() {
+        return parents;
+    }
+
+    public List<StyleableDefinition> getChildren() {
+        return children;
+    }
+
+    public String getName() {
+        return myName;
     }
 
     public StyleableDefinition getSuperclass() {

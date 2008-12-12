@@ -1,6 +1,8 @@
 package org.jetbrains.android.dom.layout;
 
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.Computable;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.xml.DomFileDescription;
 import org.jetbrains.android.AndroidManager;
@@ -26,5 +28,14 @@ public class LayoutDomFileDescription extends DomFileDescription<LayoutElement> 
 
     public boolean isMyFile(@NotNull XmlFile file, @Nullable Module module) {
         return ResourcesDomFileDescription.isInResourceDirectory(file, "layout");
+    }
+
+    public static boolean isLayoutFile(@NotNull final XmlFile file, @Nullable final Module module) {
+        final LayoutDomFileDescription description = new LayoutDomFileDescription();
+        return ApplicationManager.getApplication().runReadAction(new Computable<Boolean>() {
+            public Boolean compute() {
+                return description.isMyFile(file, module);
+            }
+        });
     }
 }

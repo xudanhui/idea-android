@@ -23,6 +23,16 @@ import java.util.List;
  * @author yole
  */
 public class PackageClassResolvingConverter extends ResolvingConverter<PsiClass> {
+    private final String extendClassName;
+
+    public PackageClassResolvingConverter(String extendClassName) {
+        this.extendClassName = extendClassName;
+    }
+
+    public PackageClassResolvingConverter() {
+        extendClassName = null;
+    }
+
     @NotNull
     public Collection<? extends PsiClass> getVariants(ConvertContext context) {
         final List<PsiClass> result = new ArrayList<PsiClass>();
@@ -30,9 +40,10 @@ public class PackageClassResolvingConverter extends ResolvingConverter<PsiClass>
         Manifest manifest = domElement.getParentOfType(Manifest.class, true);
         final String packageName = manifest == null ? null : manifest.getPackage().getValue();
         ExtendClass extendClass = domElement.getAnnotation(ExtendClass.class);
-        if (extendClass != null && packageName != null) {
+        String extendClassName = extendClass != null ? extendClass.value() : this.extendClassName;
+        if (extendClassName != null && packageName != null) {
             Project project = context.getPsiManager().getProject();
-            PsiClass baseClass = JavaPsiFacade.getInstance(project).findClass(extendClass.value(),
+            PsiClass baseClass = JavaPsiFacade.getInstance(project).findClass(extendClassName,
                     GlobalSearchScope.allScope(project));
             if (baseClass != null) {
                 Query<PsiClass> query = ClassInheritorsSearch.search(baseClass,

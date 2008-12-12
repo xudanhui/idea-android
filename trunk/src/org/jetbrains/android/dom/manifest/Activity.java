@@ -6,7 +6,6 @@ import com.intellij.util.xml.Convert;
 import com.intellij.util.xml.ExtendClass;
 import com.intellij.util.xml.Required;
 import org.jetbrains.android.dom.AndroidAttributeValue;
-import org.jetbrains.android.dom.AndroidDomElement;
 import org.jetbrains.android.dom.ResourceType;
 import org.jetbrains.android.dom.converters.PackageClassResolvingConverter;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
@@ -17,7 +16,7 @@ import java.util.List;
 /**
  * @author yole
  */
-public interface Activity extends AndroidDomElement {
+public interface Activity extends ManifestElementWithName {
     @Attribute("name")
     @Required
     @Convert(PackageClassResolvingConverter.class)

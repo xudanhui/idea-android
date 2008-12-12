@@ -16,6 +16,7 @@ public class AttributeDefinitions {
 
     private Map<String, AttributeDefinition> myAttrs = new HashMap<String, AttributeDefinition>();
     private Map<String, StyleableDefinition> myStyleables = new HashMap<String, StyleableDefinition>();
+    private Map<StyleableDefinition, String[]> parentMap = new HashMap<StyleableDefinition, String[]>();
 
     public AttributeDefinitions(XmlFile file) {
         final XmlDocument document = file.getDocument();
@@ -29,6 +30,22 @@ public class AttributeDefinitions {
             }
             else if (tag.getName().equals("declare-styleable")) {
                 parseDeclareStyleableTag(tag);
+            }
+        }
+
+        for (Map.Entry<StyleableDefinition, String[]> entry : parentMap.entrySet()) {
+            StyleableDefinition definition = entry.getKey();
+            String[] parentNames = entry.getValue();
+            for (int i = 0; i < parentNames.length; i++) {
+                String parentName = parentNames[i];
+                StyleableDefinition parent = myStyleables.get(parentName);
+                if (parent != null) {
+                    parent.addChild(definition);
+                    definition.addParent(parent);
+                }
+                else {
+                    LOG.info("Found tag with unknown parent: " + parentName);
+                }
             }
         }
     }
@@ -70,7 +87,8 @@ public class AttributeDefinitions {
             final AttributeFormat attributeFormat;
             try {
                 attributeFormat = AttributeFormat.valueOf(StringUtil.capitalize(format));
-            } catch (IllegalArgumentException e) {
+            }
+            catch (IllegalArgumentException e) {
                 return null;
             }
             result.add(attributeFormat);
@@ -92,20 +110,17 @@ public class AttributeDefinitions {
 
     private void parseDeclareStyleableTag(XmlTag tag) {
         String name = tag.getAttributeValue("name");
+        StyleableDefinition def = new StyleableDefinition(name);
         if (name == null) {
             LOG.info("Found declare-styleable tag with no name: " + tag.getText());
             return;
         }
-        String parentName = tag.getAttributeValue("parent");
-        StyleableDefinition parent = null;
-        if (parentName != null) {
-            parent = myStyleables.get(parentName);
-            if (parent == null) {
-                LOG.info("Found declare-styleable tag with unknown parent: " + tag.getText());
-                return;
-            }
+        String parentNameAttributeValue = tag.getAttributeValue("parent");
+        StyleableDefinition[] parents = null;
+        if (parentNameAttributeValue != null) {
+            String[] parentNames = parentNameAttributeValue.split("\\s+");
+            parentMap.put(def, parentNames);
         }
-        StyleableDefinition def = new StyleableDefinition(name, parent);
         myStyleables.put(name, def);
         for (XmlTag subTag : tag.findSubTags("attr")) {
             parseStyleableAttr(def, subTag);

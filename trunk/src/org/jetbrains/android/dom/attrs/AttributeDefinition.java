@@ -1,7 +1,5 @@
 package org.jetbrains.android.dom.attrs;
 
-import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,9 +24,8 @@ public class AttributeDefinition {
         return myName;
     }
 
-    @Nullable
-    public AttributeFormat getFormat() {
-        return myFormats.size() == 1 ? myFormats.get(0) : null;        
+    public List<AttributeFormat> getFormats() {
+        return myFormats;        
     }
 
     public String[] getValues() {
