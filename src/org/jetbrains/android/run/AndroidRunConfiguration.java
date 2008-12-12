@@ -6,7 +6,6 @@ import com.intellij.execution.configurations.*;
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.facet.FacetManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.SettingsEditor;
@@ -95,7 +94,7 @@ public class AndroidRunConfiguration extends ModuleBasedConfiguration<JavaRunCon
         if (module == null) {
             throw new ExecutionException("Module is not found");
         }
-        AndroidFacet facet = FacetManager.getInstance(module).getFacetByType(AndroidFacet.ID);
+        AndroidFacet facet = AndroidFacet.getInstance(module);
         if (facet == null) {
             throw new ExecutionException("No Android facet found for module");
         }

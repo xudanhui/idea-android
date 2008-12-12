@@ -8,7 +8,7 @@ import org.jetbrains.android.dom.converters.PackageClassResolvingConverter;
 /**
  * @author yole
  */
-public interface Provider extends DomElement {
+public interface Provider extends ManifestElementWithName {
     @Attribute("name")
     @Required
     @Convert(PackageClassResolvingConverter.class)

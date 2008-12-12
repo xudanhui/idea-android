@@ -39,7 +39,7 @@ public class ResourceReferenceConverter extends ResolvingConverter<ResourceValue
         String resourceTypeValue = resourceType != null ? resourceType.value() : myResourceType;
         AndroidFacet facet = AndroidFacet.getInstance(context.getModule());
         if (facet != null && resourceTypeValue != null) {
-            List<ResourceElement> elements = facet.getResourcesOfType(resourceTypeValue, null);
+            List<ResourceElement> elements = facet.getResources(resourceTypeValue, null);
             for(ResourceElement element: elements) {
                 String name = element.getName().getValue();
                 if (name != null) {
@@ -71,7 +71,7 @@ public class ResourceReferenceConverter extends ResolvingConverter<ResourceValue
             AndroidFacet facet = AndroidFacet.getInstance(context.getModule());
             if (facet == null) return PsiReference.EMPTY_ARRAY;
             GenericDomValue target = null;
-            List<ResourceElement> list = facet.getResourcesOfType(resType, ref.getPackage());
+            List<ResourceElement> list = facet.getResources(resType, ref.getPackage());
             for(ResourceElement rs: list) {
                 if (ref.getResourceName().equals(rs.getName().getValue())) {
                     target = rs.getName();
