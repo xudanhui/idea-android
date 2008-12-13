@@ -17,6 +17,7 @@ import org.jetbrains.android.AndroidManager;
 import org.jetbrains.android.dom.attrs.AttributeDefinition;
 import org.jetbrains.android.dom.attrs.AttributeDefinitions;
 import org.jetbrains.android.dom.attrs.StyleableDefinition;
+import org.jetbrains.android.dom.layout.LayoutStyleableProvider;
 import org.jetbrains.android.facet.AndroidFacet;
 
 import java.util.List;
@@ -46,7 +47,7 @@ public class MyCompletionContributor extends CompletionContributor {
                 }
                 else if (parent instanceof XmlTag) {
                     PsiElement grandParent = parent.getParent();
-                    XmlTag t = grandParent != null ? (XmlTag) grandParent : null;
+                    XmlTag t = grandParent instanceof XmlTag ? (XmlTag) grandParent : null;
                     completeWithTagNames(t, xmlFile, result);
                     return false;
                 }
@@ -68,7 +69,10 @@ public class MyCompletionContributor extends CompletionContributor {
         if (tag == null) {
             AttributeDefinitions attrDefs = provider.getAttributeDefinitions();
             for (String name : attrDefs.getStyleableNames()) {
-                styleablesToComplete.add(attrDefs.getStyleableByName(name));
+                StyleableDefinition definition = attrDefs.getStyleableByName(name);
+                if (definition.getParents().isEmpty() || provider instanceof LayoutStyleableProvider) {
+                    styleablesToComplete.add(definition);
+                }
             }
         }
         else {
@@ -82,7 +86,7 @@ public class MyCompletionContributor extends CompletionContributor {
         }
         for (StyleableDefinition definition : styleablesToComplete) {
             String s = provider.getTagName(definition);
-            result.addElement(new LookupItem<String>(s, s));
+            if (s != null) result.addElement(new LookupItem<String>(s, s));
         }
     }
 
