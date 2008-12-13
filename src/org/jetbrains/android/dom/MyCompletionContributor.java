@@ -7,22 +7,20 @@ import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.codeInsight.lookup.LookupItem;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
-import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlToken;
-import org.jetbrains.android.dom.attrs.AttributeDefinition;
-import org.jetbrains.android.dom.attrs.StyleableDefinition;
-import org.jetbrains.android.dom.layout.LayoutDomFileDescription;
-import org.jetbrains.android.dom.manifest.ManifestDomFileDescription;
-import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.AndroidManager;
+import org.jetbrains.android.dom.attrs.AttributeDefinition;
+import org.jetbrains.android.dom.attrs.AttributeDefinitions;
+import org.jetbrains.android.dom.attrs.StyleableDefinition;
+import org.jetbrains.android.facet.AndroidFacet;
 
 import java.util.List;
+import java.util.ArrayList;
 
 /**
  * @author coyote
@@ -30,55 +28,73 @@ import java.util.List;
 public class MyCompletionContributor extends CompletionContributor {
     @Override
     public boolean fillCompletionVariants(CompletionParameters parameters, CompletionResultSet result) {
-        if (!super.fillCompletionVariants(parameters, result)) return false;
         PsiElement position = parameters.getPosition();
         PsiFile file = parameters.getOriginalFile();
         if (!(file instanceof XmlFile)) return true;
+        XmlFile xmlFile = (XmlFile) file;
         if (parameters.getCompletionType() == CompletionType.BASIC && position instanceof XmlToken) {
             XmlToken token = (XmlToken) position;
-            PsiElement possibleAttribute = token.getParent();
-            if (possibleAttribute instanceof XmlAttribute && token.getTokenType().toString().equals("XML_NAME")) {
-                XmlAttribute attribute = (XmlAttribute) possibleAttribute;
-                PsiElement possibleTag = attribute.getParent();
-                if (possibleTag instanceof XmlTag) {
-                    complete((XmlTag) possibleTag, (XmlFile) file, result);
+            PsiElement parent = token.getParent();
+            if (token.getTokenType().toString().equals("XML_NAME")) {
+                if (parent instanceof XmlAttribute) {
+                    XmlAttribute attribute = (XmlAttribute) parent;
+                    PsiElement possibleTag = attribute.getParent();
+                    if (possibleTag instanceof XmlTag) {
+                        completeWithAttributes((XmlTag) possibleTag, xmlFile, result);
+                        return false;
+                    }
+                }
+                else if (parent instanceof XmlTag) {
+                    PsiElement grandParent = parent.getParent();
+                    XmlTag t = grandParent != null ? (XmlTag) grandParent : null;
+                    completeWithTagNames(t, xmlFile, result);
+                    return false;
                 }
             }
         }
         return true;
     }
 
-    private void completeForStyleable(StyleableDefinition definition, CompletionResultSet result) {
-        List<AttributeDefinition> attributes = definition.getAttributes();
-        for (AttributeDefinition attribute : attributes) {
-            String name = AndroidManager.NAMESPACE_KEY + ':' + attribute.getName();
-            result.addElement(new LookupItem<String>(name, name));
+    private StyleableProvider getProvider(XmlFile file) {
+        Module module = ModuleUtil.findModuleForPsiElement(file);
+        final AndroidFacet facet = AndroidFacet.getInstance(module);
+        if (facet == null) return null;
+        return facet.getStyleableProviderForFile(file, module);
+    }
+
+    private void completeWithTagNames(XmlTag tag, XmlFile file, CompletionResultSet result) {
+        StyleableProvider provider = getProvider(file);
+        List<StyleableDefinition> styleablesToComplete = new ArrayList<StyleableDefinition>();
+        if (tag == null) {
+            AttributeDefinitions attrDefs = provider.getAttributeDefinitions();
+            for (String name : attrDefs.getStyleableNames()) {
+                styleablesToComplete.add(attrDefs.getStyleableByName(name));
+            }
+        }
+        else {
+            StyleableDefinition definition = provider.getStyleableByTagName(tag.getName());
+            while (definition != null) {
+                for (StyleableDefinition child : definition.getChildren()) {
+                    styleablesToComplete.add(child);
+                }
+                definition = definition.getSuperclass();
+            }
+        }
+        for (StyleableDefinition definition : styleablesToComplete) {
+            String s = provider.getTagName(definition);
+            result.addElement(new LookupItem<String>(s, s));
         }
     }
 
-    private void complete(XmlTag tag, final XmlFile file, CompletionResultSet result) {
-        Module module = ModuleUtil.findModuleForPsiElement(tag);
-        final AndroidFacet facet = AndroidFacet.getInstance(module);
-        if (facet == null) return;
-        final String tagName = tag.getName();
-        Computable<StyleableDefinition> action = null;
-        if (new ManifestDomFileDescription().isMyFile(file, module)) {
-            action = new Computable<StyleableDefinition>() {
-                public StyleableDefinition compute() {
-                    return facet.getManifestStyleableByTagName(tagName);
-                }
-            };
-        }
-        else if (LayoutDomFileDescription.isLayoutFile(file, module)) {
-            action = new Computable<StyleableDefinition>() {
-                public StyleableDefinition compute() {
-                    return facet.getLayoutStyleableByTagName(tagName);
-                }
-            };
-        }
-        if (action != null) {
-            StyleableDefinition definition = ApplicationManager.getApplication().runReadAction(action);
-            completeForStyleable(definition, result);
+    private void completeWithAttributes(XmlTag tag, final XmlFile file, CompletionResultSet result) {
+        StyleableProvider provider = getProvider(file);
+        StyleableDefinition definition = provider.getStyleableByTagName(tag.getName());
+        if (definition != null) {
+            List<AttributeDefinition> attributes = definition.getAttributes();
+            for (AttributeDefinition attribute : attributes) {
+                String name = AndroidManager.NAMESPACE_KEY + ':' + attribute.getName();
+                result.addElement(new LookupItem<String>(name, name));
+            }
         }
     }
 }

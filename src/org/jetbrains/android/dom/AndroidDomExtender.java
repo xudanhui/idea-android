@@ -17,6 +17,7 @@ import org.jetbrains.android.dom.converters.CompositeConverter;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
 import org.jetbrains.android.dom.converters.StaticEnumConverter;
 import org.jetbrains.android.dom.layout.LayoutElement;
+import org.jetbrains.android.dom.layout.LayoutStyleableProvider;
 import org.jetbrains.android.dom.manifest.*;
 import org.jetbrains.android.dom.resources.ResourceValue;
 import org.jetbrains.android.facet.AndroidFacet;
@@ -29,7 +30,6 @@ import java.util.*;
  * @author yole, coyote
  */
 public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
-//    private List<String> myViewClasses;
     private static final Map<String, String> resourceTypes = new HashMap<String, String>();
 
     private static void addToMap(Map<String, String> map, String value, String... keys) {
@@ -62,24 +62,6 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
         return null;
     }
 
-    private static String getTagName(String styleableName) {
-        String prefix = "AndroidManifest";
-        if (!styleableName.startsWith(prefix)) {
-            return null;
-        }
-        String remained = styleableName.substring(prefix.length());
-        if (remained.isEmpty()) return "manifest";
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < remained.length(); i++) {
-            char c = remained.charAt(i);
-            if (builder.length() > 0 && Character.isUpperCase(c)) {
-                builder.append('-');
-            }
-            builder.append(Character.toLowerCase(c));
-        }
-        return builder.toString();
-    }
-
     private static String[] getSkipNames(AndroidDomElement element) {
         List<String> strings = new ArrayList<String>();
         if (element instanceof ManifestElementWithName) {
@@ -99,32 +81,32 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
         if (facet == null) return;
         XmlTag tag = element.getXmlTag();
         if (tag == null) return;
+        String tagName = tag.getName();
         if (element instanceof LayoutElement) {
-            String tagName = tag.getName();
-            StyleableDefinition definition = facet.getLayoutStyleableByTagName(tagName);
+            LayoutStyleableProvider provider = facet.getStyleableProvider(LayoutStyleableProvider.KEY);
+            StyleableDefinition definition = provider.getStyleableByTagName(tagName);
             if (definition != null) {
                 registerStyleableAttributes(registrar, definition, tag);
             }
-
-//            List<String> viewClasses = getViewClasses(element.getManager().getProject());
-            Set<String> viewClasses = facet.getViewClassNames();
+            Set<String> viewClasses = provider.getViewClassNames();
             for (String s : viewClasses) {
                 registrar.registerCollectionChildrenExtension(new XmlName(s), LayoutElement.class);
             }
         }
         else if (element instanceof ManifestElement) {
-            String tagName = element.getXmlTag().getName();
-            StyleableDefinition styleable = facet.getManifestStyleableByTagName(tagName);
+            ManifestStyleableProvider provider = facet.getStyleableProvider(ManifestStyleableProvider.KEY);
+            StyleableDefinition styleable = provider.getStyleableByTagName(tagName);
             String[] skipNames = getSkipNames(element);
 
             registerStyleableAttributes(registrar, styleable, element.getXmlTag(), skipNames);
-
-            for (StyleableDefinition child : styleable.getChildren()) {
-                Class myClass = getClassByManifestStyleableName(child.getName());
-                registrar.registerCollectionChildrenExtension(new XmlName(tagName), myClass);
+            
+            for (StyleableDefinition definition : styleable.getChildren()) {
+                Class myClass = getClassByManifestStyleableName(definition.getName());
+                if (myClass != null) {
+                    registrar.registerCollectionChildrenExtension(new XmlName(tagName), myClass);
+                }
             }
         }
-
         // TODO[yole] return new Object[] {PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT };
     }
 
