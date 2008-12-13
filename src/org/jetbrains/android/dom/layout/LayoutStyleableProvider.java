@@ -82,16 +82,20 @@ public class LayoutStyleableProvider extends StyleableProvider {
         }
     }
 
+    private boolean isView(StyleableDefinition definition) {
+        while (definition != null && !definition.getName().equals("View")) {
+            definition = definition.getSuperclass();
+        }
+        return definition != null;
+    }
+
     private void addChildren(AttributeDefinitions definitions) {
+        StyleableDefinition viewGroupStyleable = definitions.getStyleableByName("ViewGroup");
         for (String name : definitions.getStyleableNames()) {
             StyleableDefinition definition = definitions.getStyleableByName(name);
-            StyleableDefinition d = definition;
-            while (d != null && !d.getName().equals("ViewGroup")) {
-                d = d.getSuperclass();
-            }
-            if (d != null) {
-                definition.addParent(d);
-                d.addChild(definition);
+            if (isView(definition)) {
+                definition.addParent(viewGroupStyleable);
+                viewGroupStyleable.addChild(definition);
             }
         }
     }

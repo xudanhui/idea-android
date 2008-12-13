@@ -1,11 +1,13 @@
 package org.jetbrains.android.dom;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.xml.XmlFile;
+import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
+import com.intellij.psi.xml.XmlFile;
 import org.jetbrains.android.dom.attrs.AttributeDefinitions;
 import org.jetbrains.android.dom.attrs.StyleableDefinition;
 import org.jetbrains.android.facet.AndroidFacet;
@@ -25,11 +27,11 @@ public abstract class StyleableProvider {
 
     protected abstract String getStyleableNameByTagName(@NotNull String tagName);
 
-    protected abstract String getTagNameByStyleableName(@NotNull String styleableName); 
-    
+    protected abstract String getTagNameByStyleableName(@NotNull String styleableName);
+
     @NotNull
     public abstract String getAttrsFilename();
-    
+
     public abstract boolean isMyFile(@NotNull XmlFile file, @Nullable Module module);
 
     @NotNull
@@ -51,13 +53,17 @@ public abstract class StyleableProvider {
         return getTagNameByStyleableName(styleable.getName());
     }
 
-    private AttributeDefinitions parseAttributeDefinitions(String fileName) {
-        final VirtualFile sdkValuesDir = facet.getResourceTypeDir("values", "android");
-        if (sdkValuesDir == null) return null;
-        final VirtualFile vFile = sdkValuesDir.findChild(fileName);
-        if (vFile == null) return null;
-        Project project = facet.getModule().getProject();
-        final PsiFile file = PsiManager.getInstance(project).findFile(vFile);
+    private AttributeDefinitions parseAttributeDefinitions(final String fileName) {
+        PsiFile file = ApplicationManager.getApplication().runReadAction(new Computable<PsiFile>() {
+            public PsiFile compute() {
+                final VirtualFile sdkValuesDir = facet.getResourceTypeDir("values", "android");
+                if (sdkValuesDir == null) return null;
+                final VirtualFile vFile = sdkValuesDir.findChild(fileName);
+                if (vFile == null) return null;
+                Project project = facet.getModule().getProject();
+                return PsiManager.getInstance(project).findFile(vFile);
+            }
+        });
         if (!(file instanceof XmlFile)) return null;
         return new AttributeDefinitions((XmlFile) file);
     }
