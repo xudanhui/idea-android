@@ -142,7 +142,7 @@ public class AttributeDefinitions {
         }
     }
 
-    public StyleableDefinition getStyleableDefinition(String name) {
+    public StyleableDefinition getStyleableByName(String name) {
         return myStyleables.get(name);
     }
 

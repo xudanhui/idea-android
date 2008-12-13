@@ -13,78 +13,61 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.project.Project;
-import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
-import com.intellij.psi.search.searches.ClassInheritorsSearch;
-import com.intellij.psi.search.ProjectScope;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.util.xml.DomElement;
 import com.intellij.util.xml.DomFileElement;
 import com.intellij.util.xml.DomManager;
-import com.intellij.util.Processor;
 import org.jetbrains.android.AndroidManager;
-import org.jetbrains.android.dom.attrs.AttributeDefinitions;
-import org.jetbrains.android.dom.attrs.StyleableDefinition;
+import org.jetbrains.android.dom.StyleableProvider;
+import org.jetbrains.android.dom.layout.LayoutStyleableProvider;
 import org.jetbrains.android.dom.manifest.Manifest;
+import org.jetbrains.android.dom.manifest.ManifestStyleableProvider;
 import org.jetbrains.android.dom.resources.ResourceElement;
 import org.jetbrains.android.dom.resources.Resources;
+import org.jetbrains.android.util.Key;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author yole
  */
 public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     public static final FacetTypeId<AndroidFacet> ID = new FacetTypeId<AndroidFacet>("android");
-    private Map<String, PsiClass> viewClassMap = null;
-
-    private AttributeDefinitions myManifestAttributeDefinitions;
-    private AttributeDefinitions myLayoutAttributeDefinitions;
+    private final Map<Key<? extends StyleableProvider>, StyleableProvider> styleableProviders =
+            new HashMap<Key<? extends StyleableProvider>, StyleableProvider>();  
 
     public AndroidFacet(@NotNull Module module, String name, @NotNull AndroidFacetConfiguration configuration) {
         super(getFacetType(), module, name, configuration, null);
+        registerStyleableProvider(ManifestStyleableProvider.KEY, new ManifestStyleableProvider(this));
+        registerStyleableProvider(LayoutStyleableProvider.KEY, new LayoutStyleableProvider(this));
     }
 
     public static AndroidFacet getInstance(Module module) {
         return FacetManager.getInstance(module).getFacetByType(ID);
     }
 
-    private void addViewClassToMap(PsiClass viewClass) {
-        viewClassMap.put(viewClass.getName(), viewClass);
+    private <T extends StyleableProvider> void registerStyleableProvider(Key<T> key, T provider) {
+        styleableProviders.put(key, provider);
     }
 
-    private synchronized Map<String, PsiClass> getViewClassMap() {
-        if (viewClassMap == null) {
-            viewClassMap = new HashMap<String, PsiClass>();
-            Project project = getModule().getProject();
-            JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
-            PsiClass viewClass = facade.findClass("android.view.View", ProjectScope.getAllScope(project));
-            
-            if (viewClass != null) {
-                addViewClassToMap(viewClass);
-                ClassInheritorsSearch.search(viewClass).forEach(new Processor<PsiClass>() {
-                    public boolean process(PsiClass psiClass) {
-                        addViewClassToMap(psiClass);
-                        return true;
-                    }
-                });
-            }
+    public <T extends StyleableProvider> T getStyleableProvider(Key<T> key) {
+        return (T) styleableProviders.get(key);
+    }
+
+    public StyleableProvider getStyleableProviderForFile(@NotNull XmlFile file, Module module) {
+        for (Map.Entry<Key<? extends StyleableProvider>, StyleableProvider> entry : styleableProviders.entrySet()) {
+            StyleableProvider provider = entry.getValue();
+            if (provider.isMyFile(file, module)) return provider;
         }
-        return viewClassMap;
-    }
-
-    public Set<String> getViewClassNames() {
-        return getViewClassMap().keySet();
-    }
-
-    public PsiClass getViewClass(String name) {
-        return getViewClassMap().get(name);
+        return null;
     }
 
     @Nullable
@@ -120,7 +103,7 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
     }
 
     @Nullable
-    private VirtualFile getResourceTypeDir(String resourceType, @Nullable String resPackage) {
+    public VirtualFile getResourceTypeDir(String resourceType, @Nullable String resPackage) {
         VirtualFile resourcesDir = "android".equals(resPackage) ? getSdkResourcesDir() : getResourcesDir();
         if (resourcesDir == null) return null;
         return resourcesDir.findChild(resourceType);
@@ -240,106 +223,7 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
         return result;
     }
 
-    public AttributeDefinitions getManifestAttributeDefinitions() {
-        if (myManifestAttributeDefinitions == null) {
-            myManifestAttributeDefinitions = parseAttributeDefinitions("attrs_manifest.xml");
-        }
-        return myManifestAttributeDefinitions;
-    }
-
-    public AttributeDefinitions getLayoutAttributeDefinitions() {
-        if (myLayoutAttributeDefinitions == null) {
-            myLayoutAttributeDefinitions = parseAttributeDefinitions("attrs.xml");
-            linkSuperclasses(myLayoutAttributeDefinitions);
-        }
-        return myLayoutAttributeDefinitions;
-    }
-
-    private void linkSuperclasses(AttributeDefinitions attributeDefinitions) {
-        for (String name : attributeDefinitions.getStyleableNames()) {
-            final StyleableDefinition definition = attributeDefinitions.getStyleableDefinition(name);
-//            final PsiClass superClass = findSuperclass(name);
-//            if (superClass != null) {
-//                StyleableDefinition superclassDefinition = attributeDefinitions.getStyleableDefinition(superClass.getName());
-//                definition.setSuperclass(superclassDefinition);
-//            }
-            StyleableDefinition baseStyleable = getBaseStyleable(attributeDefinitions, name);
-            definition.setSuperclass(baseStyleable);
-        }
-    }
-
-    public PsiClass findSuperclass(String name) {
-        /*JavaPsiFacade facade = JavaPsiFacade.getInstance(getModule().getProject());
-        PsiClass layoutClass = facade.findClass("android.widget." + name, getModule().getModuleWithDependenciesAndLibrariesScope(false));
-        if (layoutClass != null) {
-            return layoutClass.getSuperClass();
-        }
-        return null;*/
-        PsiClass psiClass = getViewClass(name);
-        if (psiClass == null) return null;
-        return psiClass.getSuperClass();
-    }
-
-    private AttributeDefinitions parseAttributeDefinitions(String fileName) {
-        final VirtualFile sdkValuesDir = getResourceTypeDir("values", "android");
-        if (sdkValuesDir == null) return null;
-        final VirtualFile vFile = sdkValuesDir.findChild(fileName);
-        if (vFile == null) return null;
-        final PsiFile file = PsiManager.getInstance(getModule().getProject()).findFile(vFile);
-        if (!(file instanceof XmlFile)) return null;
-        return new AttributeDefinitions((XmlFile) file);
-    }
-
     public static AndroidFacetType getFacetType() {
         return (AndroidFacetType) FacetTypeRegistry.getInstance().findFacetType(AndroidFacet.ID);
-    }
-
-    public StyleableDefinition getManifestStyleableByTagName(String tagName) {
-        String styleableName = getManifestStyleableName(tagName);
-        AttributeDefinitions definitions = getManifestAttributeDefinitions();
-        return definitions.getStyleableDefinition(styleableName);
-    }
-
-    private StyleableDefinition getBaseStyleable(AttributeDefinitions definitions, String styleableName) {
-        PsiClass superClass = findSuperclass(styleableName);
-        while (superClass != null) {
-            StyleableDefinition definition = definitions.getStyleableDefinition(superClass.getName());
-            if (definition != null) return definition;
-            superClass = superClass.getSuperClass();
-        }
-        return null;
-    }
-
-    public StyleableDefinition getLayoutStyleableByTagName(String tagName) {
-        final AttributeDefinitions attrDefs = getLayoutAttributeDefinitions();
-        final StyleableDefinition definition = attrDefs.getStyleableDefinition(tagName);
-        if (definition != null) {
-            return definition;
-        }
-        /*else {
-            // e.g. TimePicker is not listed in attrs.xml
-            final PsiClass superClass = findSuperclass(tagName);
-            if (superClass != null) {
-                final StyleableDefinition superStyleable = attrDefs.getStyleableDefinition(superClass.getName());
-                if (superStyleable != null) {
-                    return superStyleable;
-                }
-            }
-        }
-        return null;*/
-        return getBaseStyleable(attrDefs, tagName);
-    }
-
-    private static String getManifestStyleableName(String tagName) {
-        String prefix = "AndroidManifest";
-        if (tagName.equals("manifest")) return prefix;
-        String[] parts = tagName.split("-");
-        StringBuilder builder = new StringBuilder(prefix);
-        for (String part : parts) {
-            char first = part.charAt(0);
-            String remained = part.substring(1);
-            builder.append(Character.toUpperCase(first)).append(remained);
-        }
-        return builder.toString();
     }
 }

@@ -22,4 +22,8 @@ public class ManifestDomFileDescription extends DomFileDescription<Manifest> {
     public boolean isMyFile(@NotNull XmlFile file, @Nullable Module module) {
         return file.getName().equals(AndroidManager.MANIFEST_FILE_NAME);
     }
+
+    public static boolean isManifestFile(@NotNull XmlFile file, @Nullable Module module) {
+        return new ManifestDomFileDescription().isMyFile(file, module);
+    }
 }
