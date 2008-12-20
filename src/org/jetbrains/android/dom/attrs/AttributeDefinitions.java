@@ -116,7 +116,6 @@ public class AttributeDefinitions {
             return;
         }
         String parentNameAttributeValue = tag.getAttributeValue("parent");
-        StyleableDefinition[] parents = null;
         if (parentNameAttributeValue != null) {
             String[] parentNames = parentNameAttributeValue.split("\\s+");
             parentMap.put(def, parentNames);

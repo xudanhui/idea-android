@@ -62,13 +62,9 @@ public class LayoutStyleableProvider extends StyleableProvider {
         return getViewClassMap().keySet();
     }
 
-    public PsiClass getViewClass(String name) {
-        return getViewClassMap().get(name);
-    }
-
     public StyleableDefinition getStyleableByTagName(String tagName) {
         final AttributeDefinitions attrDefs = getAttributeDefinitions();
-        final StyleableDefinition definition = attrDefs.getStyleableByName(tagName);
+        StyleableDefinition definition = attrDefs.getStyleableByName(tagName);
         if (definition != null) return definition;
         // e.g. TimePicker is not listed in attrs.xml
         return getBaseStyleable(attrDefs, tagName);
@@ -101,7 +97,7 @@ public class LayoutStyleableProvider extends StyleableProvider {
     }
 
     public PsiClass findSuperclass(String name) {
-        PsiClass psiClass = getViewClass(name);
+        PsiClass psiClass = getViewClassMap().get(name);
         if (psiClass == null) return null;
         return psiClass.getSuperClass();
     }
@@ -143,7 +139,9 @@ public class LayoutStyleableProvider extends StyleableProvider {
         return "attrs.xml";
     }
 
+    @Override
     public boolean isMyFile(@NotNull final XmlFile file, final Module module) {
+        if (forAllFiles) return true;
         final LayoutDomFileDescription description = new LayoutDomFileDescription();
         return ApplicationManager.getApplication().runReadAction(new Computable<Boolean>() {
             public Boolean compute() {

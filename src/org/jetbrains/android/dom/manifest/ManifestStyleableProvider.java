@@ -55,6 +55,7 @@ public class ManifestStyleableProvider extends StyleableProvider {
     }
 
     public boolean isMyFile(@NotNull XmlFile file, @Nullable Module module) {
+        if (forAllFiles) return true;
         ManifestDomFileDescription description = new ManifestDomFileDescription();
         return description.isMyFile(file, module);
     }
