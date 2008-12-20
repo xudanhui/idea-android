@@ -3,7 +3,6 @@ package org.jetbrains.android.dom;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.PathManager;
 import com.intellij.testFramework.builders.JavaModuleFixtureBuilder;
 import com.intellij.testFramework.builders.ModuleFixtureBuilder;
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
@@ -28,15 +27,15 @@ abstract class AndroidCompletionTest extends TestCase {
     }
 
     private static String getCompletionTestDataPath() {
-        return getHomePath() + "/testData/completion";
+        return getTestDataPath() + "/completion";
     }
 
-    private static String getHomePath() {
-        return PathManager.getHomePath().replace(File.separatorChar, '/');
+    private static String getTestDataPath() {
+        return new File("testData").getAbsolutePath().replace('\\', '/');
     }
 
     private static String getTestSkdPath() {
-        return getHomePath() + "/testData/sdk";
+        return getTestDataPath() + "/sdk";
     }
 
     public void setUp() throws Exception {
@@ -46,6 +45,7 @@ abstract class AndroidCompletionTest extends TestCase {
         myFixture.setTestDataPath(getCompletionTestDataPath() + '/' + activeFolder + '/');
         myFixture.setUp();
         moduleBuilder.addContentRoot(myFixture.getTempDirPath());
+        //moduleBuilder.addContentRoot(getCompletionTestDataPath());
         addFacet();
     }
 

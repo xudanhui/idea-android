@@ -5,6 +5,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.psi.xml.XmlFile;
@@ -17,7 +18,9 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author coyote
  */
-public abstract class StyleableProvider<T> {
+public abstract class StyleableProvider {
+    private static final Logger LOG = Logger.getInstance("#org.jetbrains.android.dom.StyleableProvider");
+
     protected final AndroidFacet facet;
     private AttributeDefinitions definitions = null;
     protected boolean forAllFiles = false;
@@ -60,6 +63,7 @@ public abstract class StyleableProvider<T> {
         return getTagNameByStyleableName(styleable.getName());
     }
 
+    @NotNull
     private AttributeDefinitions parseAttributeDefinitions(final String fileName) {
         PsiFile file = ApplicationManager.getApplication().runReadAction(new Computable<PsiFile>() {
             public PsiFile compute() {
@@ -71,7 +75,13 @@ public abstract class StyleableProvider<T> {
                 return PsiManager.getInstance(project).findFile(vFile);
             }
         });
-        if (!(file instanceof XmlFile)) return null;
+        String valuePath = "<sdk>/tools/lib/res/default/value";
+        if (file == null) {
+            LOG.error("File " + file + " is not found in " + valuePath + " directory");
+        }
+        if (!(file instanceof XmlFile)) {
+            LOG.error("File " + file + " in " + valuePath + " is not an xml file");
+        }
         return new AttributeDefinitions((XmlFile) file);
     }
 }
