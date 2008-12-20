@@ -37,7 +37,7 @@ public class ManifestStyleableProvider extends StyleableProvider {
             return null;
         }
         String remained = styleableName.substring(prefix.length());
-        if (remained.isEmpty()) return "manifest";
+        if (remained.length() == 0) return "manifest";
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < remained.length(); i++) {
             char c = remained.charAt(i);
