@@ -42,7 +42,7 @@ public abstract class StyleableProvider {
 
     public abstract boolean isMyFile(@NotNull XmlFile file, @Nullable Module module);
 
-    @NotNull
+    @Nullable
     public AttributeDefinitions getAttributeDefinitions() {
         if (definitions == null) {
             definitions = parseAttributeDefinitions(getAttrsFilename());
@@ -55,6 +55,7 @@ public abstract class StyleableProvider {
         String styleableName = getStyleableNameByTagName(tagName);
         if (styleableName == null) return null;
         AttributeDefinitions definitions = getAttributeDefinitions();
+        if (definitions == null) return null;
         return definitions.getStyleableByName(styleableName);
     }
 
@@ -63,7 +64,7 @@ public abstract class StyleableProvider {
         return getTagNameByStyleableName(styleable.getName());
     }
 
-    @NotNull
+    @Nullable
     private AttributeDefinitions parseAttributeDefinitions(final String fileName) {
         PsiFile file = ApplicationManager.getApplication().runReadAction(new Computable<PsiFile>() {
             public PsiFile compute() {
@@ -77,10 +78,12 @@ public abstract class StyleableProvider {
         });
         String valuePath = "<sdk>/tools/lib/res/default/value";
         if (file == null) {
-            LOG.error("File " + file + " is not found in " + valuePath + " directory");
+            LOG.info("File " + fileName + " is not found in " + valuePath + " directory");
+            return null;
         }
         if (!(file instanceof XmlFile)) {
-            LOG.error("File " + file + " in " + valuePath + " is not an xml file");
+            LOG.info("File " + fileName + " in " + valuePath + " is not an xml file");
+            return null;
         }
         return new AttributeDefinitions((XmlFile) file);
     }

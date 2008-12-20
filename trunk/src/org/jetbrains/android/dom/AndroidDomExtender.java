@@ -84,9 +84,9 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
         String tagName = tag.getName();
         if (element instanceof LayoutElement) {
             LayoutStyleableProvider provider = facet.getStyleableProvider(LayoutStyleableProvider.KEY);
-            StyleableDefinition definition = provider.getStyleableByTagName(tagName);
-            if (definition != null) {
-                registerStyleableAttributes(registrar, definition, tag);
+            StyleableDefinition styleable = provider.getStyleableByTagName(tagName);
+            if (styleable != null) {
+                registerStyleableAttributes(registrar, styleable, tag);
             }
             Set<String> viewClasses = provider.getViewClassNames();
             for (String s : viewClasses) {
@@ -96,6 +96,7 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
         else if (element instanceof ManifestElement) {
             ManifestStyleableProvider provider = facet.getStyleableProvider(ManifestStyleableProvider.KEY);
             StyleableDefinition styleable = provider.getStyleableByTagName(tagName);
+            if (styleable == null) return;
             String[] skipNames = getSkipNames(element);
 
             registerStyleableAttributes(registrar, styleable, element.getXmlTag(), skipNames);

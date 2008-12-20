@@ -16,6 +16,7 @@ import org.jetbrains.android.dom.attrs.StyleableDefinition;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.util.Key;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +65,7 @@ public class LayoutStyleableProvider extends StyleableProvider {
 
     public StyleableDefinition getStyleableByTagName(String tagName) {
         final AttributeDefinitions attrDefs = getAttributeDefinitions();
+        if (attrDefs == null) return null;
         StyleableDefinition definition = attrDefs.getStyleableByName(tagName);
         if (definition != null) return definition;
         // e.g. TimePicker is not listed in attrs.xml
@@ -113,7 +115,7 @@ public class LayoutStyleableProvider extends StyleableProvider {
     }
 
 
-    @NotNull
+    @Nullable
     public AttributeDefinitions getAttributeDefinitions() {
         AttributeDefinitions attributeDefinitions = super.getAttributeDefinitions();
         if (!initialized) {
