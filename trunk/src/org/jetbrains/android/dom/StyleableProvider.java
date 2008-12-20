@@ -17,12 +17,17 @@ import org.jetbrains.annotations.Nullable;
 /**
  * @author coyote
  */
-public abstract class StyleableProvider {
+public abstract class StyleableProvider<T> {
     protected final AndroidFacet facet;
     private AttributeDefinitions definitions = null;
+    protected boolean forAllFiles = false;
 
     public StyleableProvider(@NotNull AndroidFacet facet) {
         this.facet = facet;
+    }
+
+    void setForAllFiles(boolean forAllFiles) {
+        this.forAllFiles = forAllFiles;
     }
 
     protected abstract String getStyleableNameByTagName(@NotNull String tagName);
@@ -42,6 +47,7 @@ public abstract class StyleableProvider {
         return definitions;
     }
 
+    @Nullable
     public StyleableDefinition getStyleableByTagName(String tagName) {
         String styleableName = getStyleableNameByTagName(tagName);
         if (styleableName == null) return null;
@@ -49,6 +55,7 @@ public abstract class StyleableProvider {
         return definitions.getStyleableByName(styleableName);
     }
 
+    @Nullable
     public String getTagName(StyleableDefinition styleable) {
         return getTagNameByStyleableName(styleable.getName());
     }
