@@ -20,8 +20,8 @@ import org.jetbrains.android.dom.attrs.StyleableDefinition;
 import org.jetbrains.android.dom.layout.LayoutStyleableProvider;
 import org.jetbrains.android.facet.AndroidFacet;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author coyote
