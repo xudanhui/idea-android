@@ -31,10 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author yole
@@ -60,6 +57,10 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
 
     public <T extends StyleableProvider> T getStyleableProvider(Key<T> key) {
         return (T) styleableProviders.get(key);
+    }
+
+    public Collection<StyleableProvider> getStyleableProviders() {
+        return styleableProviders.values();
     }
 
     public StyleableProvider getStyleableProviderForFile(@NotNull XmlFile file, Module module) {
