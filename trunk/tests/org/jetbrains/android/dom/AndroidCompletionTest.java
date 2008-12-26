@@ -5,7 +5,6 @@ import com.intellij.facet.ModifiableFacetModel;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.testFramework.builders.JavaModuleFixtureBuilder;
-import com.intellij.testFramework.builders.ModuleFixtureBuilder;
 import com.intellij.testFramework.fixtures.*;
 import junit.framework.TestCase;
 import org.jetbrains.android.facet.AndroidFacet;
@@ -39,11 +38,12 @@ abstract class AndroidCompletionTest extends TestCase {
 
     public void setUp() throws Exception {
         final TestFixtureBuilder<IdeaProjectTestFixture> projectBuilder = IdeaTestFixtureFactory.getFixtureFactory().createFixtureBuilder();
-        ModuleFixtureBuilder moduleBuilder = projectBuilder.addModule(JavaModuleFixtureBuilder.class);
+        JavaModuleFixtureBuilder moduleBuilder = projectBuilder.addModule(JavaModuleFixtureBuilder.class);
         myFixture = IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(projectBuilder.getFixture());
         myFixture.setTestDataPath(getCompletionTestDataPath() + '/' + activeFolder + '/');
         moduleBuilder.addContentRoot(myFixture.getTempDirPath());
         moduleBuilder.addContentRoot(getCompletionTestDataPath());
+        //moduleBuilder.addLibraryJars("android", getTestSkdPath() + '/', )
         myFixture.setUp();
         moduleFixture = moduleBuilder.getFixture();
         addAndroidFacet(moduleFixture.getModule());
