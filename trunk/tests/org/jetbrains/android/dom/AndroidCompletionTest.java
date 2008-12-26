@@ -3,12 +3,10 @@ package org.jetbrains.android.dom;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.testFramework.builders.JavaModuleFixtureBuilder;
 import com.intellij.testFramework.builders.ModuleFixtureBuilder;
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
-import com.intellij.testFramework.fixtures.TestFixtureBuilder;
+import com.intellij.testFramework.fixtures.*;
 import junit.framework.TestCase;
 import org.jetbrains.android.facet.AndroidFacet;
 
@@ -19,6 +17,7 @@ import java.io.File;
  */
 abstract class AndroidCompletionTest extends TestCase {
     protected CodeInsightTestFixture myFixture;
+    protected ModuleFixture moduleFixture;
     protected AndroidFacet facet;
     private final String activeFolder;
 
@@ -43,14 +42,15 @@ abstract class AndroidCompletionTest extends TestCase {
         ModuleFixtureBuilder moduleBuilder = projectBuilder.addModule(JavaModuleFixtureBuilder.class);
         myFixture = IdeaTestFixtureFactory.getFixtureFactory().createCodeInsightFixture(projectBuilder.getFixture());
         myFixture.setTestDataPath(getCompletionTestDataPath() + '/' + activeFolder + '/');
-        myFixture.setUp();
         moduleBuilder.addContentRoot(myFixture.getTempDirPath());
-        //moduleBuilder.addContentRoot(getCompletionTestDataPath());
-        addFacet();
+        moduleBuilder.addContentRoot(getCompletionTestDataPath());
+        myFixture.setUp();
+        moduleFixture = moduleBuilder.getFixture();
+        addAndroidFacet(moduleFixture.getModule());
     }
 
-    private void addFacet() {
-        FacetManager facetManager = FacetManager.getInstance(myFixture.getModule());
+    private void addAndroidFacet(Module module) {
+        FacetManager facetManager = FacetManager.getInstance(module);
         facet = facetManager.createFacet(AndroidFacet.getFacetType(), "Android", null);
         facet.getConfiguration().setSdkPath(getTestSkdPath());
         final ModifiableFacetModel model = facetManager.createModifiableModel();
@@ -60,6 +60,10 @@ abstract class AndroidCompletionTest extends TestCase {
                 model.commit();
             }
         });
+    }
+
+    public void tearDown() throws Exception {
+        myFixture.tearDown();
     }
 }
 
