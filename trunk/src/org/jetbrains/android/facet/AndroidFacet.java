@@ -203,7 +203,7 @@ public class AndroidFacet extends Facet<AndroidFacetConfiguration> {
         return null;
     }
 
-    public List<String> getResourceFileNames(String resourceType) {
+    public List<String> getResourceFileNames(@NotNull String resourceType) {
         List<String> result = new ArrayList<String>();
         if (resourceType.equals("drawable")) {
             VirtualFile drawablesDir = getResourceTypeDir("drawable", null);

@@ -1,5 +1,6 @@
 package org.jetbrains.android.dom;
 
+import com.intellij.openapi.module.Module;
 import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.util.ArrayUtil;
@@ -14,6 +15,7 @@ import org.jetbrains.android.dom.attrs.AttributeDefinition;
 import org.jetbrains.android.dom.attrs.AttributeFormat;
 import org.jetbrains.android.dom.attrs.StyleableDefinition;
 import org.jetbrains.android.dom.converters.CompositeConverter;
+import org.jetbrains.android.dom.converters.EmptyConverter;
 import org.jetbrains.android.dom.converters.ResourceReferenceConverter;
 import org.jetbrains.android.dom.converters.StaticEnumConverter;
 import org.jetbrains.android.dom.layout.LayoutElement;
@@ -47,12 +49,12 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
 //        registerDescriptor("textColor", ResourceValue.class, new ResourceReferenceConverter("color"));
 //        registerDescriptor("textAlign", String.class, new StaticEnumConverter("start", "center", "end"));
 
-        //manifest
         addToMap(resourceTypes, "string", "label", "description");
         addToMap(resourceTypes, "drawable", "icon");
         addToMap(resourceTypes, "style", "theme");
     }
 
+    @Nullable
     private static String getResourceType(String attributeName) {
         String type = resourceTypes.get(attributeName);
         if (type != null) return type;
@@ -62,7 +64,7 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
         return null;
     }
 
-    private static String[] getSkipNames(AndroidDomElement element) {
+    private static String[] getManifestSkipNames(AndroidDomElement element) {
         List<String> strings = new ArrayList<String>();
         if (element instanceof ManifestElementWithName) {
             strings.add("name");
@@ -77,7 +79,9 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
     }
 
     public void registerExtensions(@NotNull AndroidDomElement element, @NotNull DomExtensionsRegistrar registrar) {
-        final AndroidFacet facet = AndroidFacet.getInstance(element.getModule());
+        Module module = element.getModule();
+        if (module == null) return;
+        final AndroidFacet facet = AndroidFacet.getInstance(module);
         if (facet == null) return;
         XmlTag tag = element.getXmlTag();
         if (tag == null) return;
@@ -86,7 +90,8 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
             LayoutStyleableProvider provider = facet.getStyleableProvider(LayoutStyleableProvider.KEY);
             StyleableDefinition styleable = provider.getStyleableByTagName(tagName);
             if (styleable != null) {
-                registerStyleableAttributes(registrar, styleable, tag);
+                // id is a strange attribute and we skip it for a while
+                registerStyleableAttributes(registrar, provider, styleable, tag, "id");
             }
             Set<String> viewClasses = provider.getViewClassNames();
             for (String s : viewClasses) {
@@ -97,10 +102,10 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
             ManifestStyleableProvider provider = facet.getStyleableProvider(ManifestStyleableProvider.KEY);
             StyleableDefinition styleable = provider.getStyleableByTagName(tagName);
             if (styleable == null) return;
-            String[] skipNames = getSkipNames(element);
+            String[] skipNames = getManifestSkipNames(element);
 
-            registerStyleableAttributes(registrar, styleable, element.getXmlTag(), skipNames);
-            
+            registerStyleableAttributes(registrar, provider, styleable, element.getXmlTag(), skipNames);
+
             for (StyleableDefinition definition : styleable.getChildren()) {
                 Class myClass = getClassByManifestStyleableName(definition.getName());
                 if (myClass != null) {
@@ -108,23 +113,20 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
                 }
             }
         }
-        // TODO[yole] return new Object[] {PsiModificationTracker.OUT_OF_CODE_BLOCK_MODIFICATION_COUNT };
     }
 
-    private void registerStyleableAttributes(DomExtensionsRegistrar registrar, @NotNull StyleableDefinition styleable,
-                                             XmlTag tag, String... skipNames) {
-        final XmlAttribute[] attributes = tag.getAttributes();
-        for (XmlAttribute attribute : attributes) {
-            final String ns = attribute.getNamespace();
-            if (ns.equals(AndroidManager.NAMESPACE)) {
+    private void registerStyleableAttributes(DomExtensionsRegistrar registrar, @NotNull StyleableProvider provider,
+                                             @NotNull StyleableDefinition styleable, XmlTag tag, String... skipNames) {
+        XmlTag parentTag = tag.getParentTag();
+        for (XmlAttribute attribute : tag.getAttributes()) {
+            if (attribute.getNamespace().equals(AndroidManager.NAMESPACE)) {
                 final String localName = attribute.getLocalName();
                 if (ArrayUtil.contains(localName, (Object[]) skipNames)) {
                     continue;
                 }
-                final AttributeDefinition definition = styleable.findAttribute(localName);
+                AttributeDefinition definition = provider.findAttribute(localName, styleable, parentTag);
                 if (definition != null) {
                     XmlName xmlName = new XmlName(definition.getName(), AndroidManager.NAMESPACE_KEY);
-                    // TODO converter for formats with multiple alternatives
                     List<AttributeFormat> formats = definition.getFormats();
                     Class valueClass = formats.size() == 1 ? getValueClass(formats.get(0)) : String.class;
                     final Converter converter = getConverter(definition);
@@ -133,7 +135,6 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
                         extension.setConverter(converter);
                     }
                 }
-
             }
         }
     }
@@ -157,53 +158,45 @@ public class AndroidDomExtender extends DomExtender<AndroidDomElement> {
     private Converter getConverter(AttributeDefinition attr) {
         List<AttributeFormat> formats = attr.getFormats();
         CompositeConverter compositeConverter = new CompositeConverter();
-        boolean containsColor = formats.contains(AttributeFormat.Color);
+        ResolvingConverter converter = null;
+        String[] values = attr.getValues();
+        boolean emptyConverterAdded = false;
         for (AttributeFormat format : formats) {
-            ResolvingConverter converter = null;
-            if (format == AttributeFormat.Enum) {
-                converter = new StaticEnumConverter(attr.getValues());
-                compositeConverter.addConverter(String.class, converter);
+            switch (format) {
+                case Reference:
+                    String resourceType = getResourceType(attr.getName());
+                    if (resourceType == null && formats.contains(AttributeFormat.Color)) {
+                        resourceType = "drawable";
+                    }
+                    converter = new ResourceReferenceConverter(resourceType);
+                    compositeConverter.addConverter(ResourceValue.class, converter);
+                    break;
+                case Color:
+                    converter = new ResourceReferenceConverter("color");
+                    compositeConverter.addConverter(ResourceValue.class, converter);
+                    break;
+                case Enum:
+                    converter = new StaticEnumConverter(values);
+                    compositeConverter.addConverter(String.class, converter);
+                    break;
+                default:
+                    if (!emptyConverterAdded) {
+                        converter = new EmptyConverter();
+                        compositeConverter.addConverter(String.class, converter);
+                        emptyConverterAdded = true;
+                    }
             }
-            else if (format == AttributeFormat.Reference) {
-                String resourceType = getResourceType(attr.getName());
-                if (resourceType == null && containsColor) {
-                    resourceType = "drawable";
-                }
-                converter = new ResourceReferenceConverter(resourceType);
-                compositeConverter.addConverter(ResourceValue.class, converter);
-            }
-            else if (format == AttributeFormat.Color) {
-                converter = new ResourceReferenceConverter("color");
-                compositeConverter.addConverter(ResourceValue.class, converter);
-            }
-            if (formats.size() == 1) return converter;
         }
-        return compositeConverter;
+        return compositeConverter.size() == 1 ? converter : compositeConverter;
     }
 
-    /*private synchronized List<String> getViewClasses(Project project) {
-        if (myViewClasses == null) {
-            myViewClasses = new ArrayList<String>();
-            PsiClass viewClass = JavaPsiFacade.getInstance(project).findClass("android.view.View", ProjectScope.getAllScope(project));
-            if (viewClass != null) {
-                myViewClasses.add(viewClass.getName());
-                ClassInheritorsSearch.search(viewClass).forEach(new Processor<PsiClass>() {
-                    public boolean process(PsiClass psiClass) {
-                        myViewClasses.add(psiClass.getName());
-                        return true;
-                    }
-                });
-            }
-        }
-        return myViewClasses;
-    }*/
-
-    private static final Map<String, AndroidAttributeDescriptor> ourDescriptors = new HashMap<String, AndroidAttributeDescriptor>();
+    /*private static final Map<String, AndroidAttributeDescriptor> ourDescriptors = new HashMap<String, AndroidAttributeDescriptor>();
 
     private static void registerDescriptor(String name, Class valueClass, Converter converter) {
         ourDescriptors.put(name, new AndroidAttributeDescriptor(valueClass, converter));
-    }
+    }*/
 
+    @Nullable
     private static Class getClassByManifestStyleableName(String styleableName) {
         String prefix = "AndroidManifest";
         if (!styleableName.startsWith(prefix)) {
