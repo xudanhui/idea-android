@@ -12,6 +12,7 @@ import java.util.*;
  */
 public class CompositeConverter extends ResolvingConverter<Object> {
     private Map<Class, Set<ResolvingConverter>> converters = new HashMap<Class, Set<ResolvingConverter>>();
+    private int converterCount = 0;
 
     public void addConverter(Class c, ResolvingConverter converter) {
         Set<ResolvingConverter> convertersForC = converters.get(c);
@@ -20,16 +21,22 @@ public class CompositeConverter extends ResolvingConverter<Object> {
             converters.put(c, convertersForC);
         }
         convertersForC.add(converter);
+        converterCount++;
     }
 
     public void removeConverter(Class c, ResolvingConverter converter) {
         Set<ResolvingConverter> convertersForC = converters.get(c);
         if (convertersForC == null) return;
         convertersForC.remove(converter);
+        converterCount--;
+    }
+
+    public Set<ResolvingConverter> getConverters(Class c) {
+        return Collections.unmodifiableSet(converters.get(c));
     }
 
     public int size() {
-        return converters.size();
+        return converterCount;
     }
 
     @NotNull

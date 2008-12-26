@@ -1,18 +1,18 @@
 package org.jetbrains.android.dom.converters;
 
-import com.intellij.util.xml.ConvertContext;
-import com.intellij.util.xml.ResolvingConverter;
+import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import com.intellij.util.xml.ConvertContext;
+import com.intellij.util.xml.ResolvingConverter;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Collections;
+import java.util.Collection;
 
 /**
- * @author yole
+ * @author coyote
  */
 public class StaticEnumConverter extends ResolvingConverter<String> {
     private Set<String> myValues = new HashSet<String>();
@@ -27,10 +27,17 @@ public class StaticEnumConverter extends ResolvingConverter<String> {
     }
 
     public String fromString(@Nullable @NonNls String s, ConvertContext context) {
-        return s != null && myValues.contains(s) ? s : null;
+        return myValues.contains(s) ? s : null;
+    }
+
+    @Override
+    public String toString() {
+        return "StaticEnumConverter " + myValues.toString();
     }
 
     public String toString(@Nullable String s, ConvertContext context) {
         return s;
     }
+
+
 }

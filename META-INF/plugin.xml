@@ -41,8 +41,10 @@
         <compiler implementation="org.jetbrains.android.compiler.AndroidIdlCompiler"/>
         <compiler implementation="org.jetbrains.android.compiler.AndroidDexCompiler"/>
         <compiler implementation="org.jetbrains.android.compiler.AndroidPackagingCompiler"/>
-        <completion.contributor implementation="org.jetbrains.android.dom.MyCompletionContributor"
+        <completion.contributor implementation="org.jetbrains.android.AndroidCompletionContributor"
                                 id="compositieAttributeValues" order="first"/>
+        <annotator language="JAVA" implementationClass="org.jetbrains.android.AndroidAnnotator"/>
+        <annotator language="XML" implementationClass="org.jetbrains.android.AndroidAnnotator"/>
         
     </extensions>
 </idea-plugin>

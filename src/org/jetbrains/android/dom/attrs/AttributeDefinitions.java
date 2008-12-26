@@ -5,6 +5,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.xml.XmlDocument;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -18,7 +19,7 @@ public class AttributeDefinitions {
     private Map<String, StyleableDefinition> myStyleables = new HashMap<String, StyleableDefinition>();
     private Map<StyleableDefinition, String[]> parentMap = new HashMap<StyleableDefinition, String[]>();
 
-    public AttributeDefinitions(XmlFile file) {
+    public AttributeDefinitions(@NotNull XmlFile file) {
         final XmlDocument document = file.getDocument();
         if (document == null) return;
         final XmlTag rootTag = document.getRootTag();
@@ -56,22 +57,24 @@ public class AttributeDefinitions {
             LOG.info("Found attr tag with no name: " + tag.getText());
             return null;
         }
-        List<AttributeFormat> formats = null;
+        List<AttributeFormat> parsedFormats = null;
+        List<AttributeFormat> formats = new ArrayList<AttributeFormat>();
         XmlTag[] values = tag.findSubTags("enum");
         String format = tag.getAttributeValue("format");
         if (format != null) {
-            formats = parseAttrFormat(format);
+            parsedFormats = parseAttrFormat(format);
+            if (parsedFormats != null) formats.addAll(parsedFormats);
         }
-        else if (values.length > 0) {
-            formats = Collections.singletonList(AttributeFormat.Enum);
+        if (values.length > 0) {
+            formats.add(AttributeFormat.Enum);
         }
         else {
             values = tag.findSubTags("flag");
             if (values.length > 0) {
-                formats = Collections.singletonList(AttributeFormat.Flag);
+                formats.add(AttributeFormat.Flag);
             }
         }
-        if (formats == null) {
+        if (formats.isEmpty() && parsedFormats == null) {
             LOG.info("Unknown format for tag: " + tag.getText());
             return null;
         }
@@ -139,6 +142,10 @@ public class AttributeDefinitions {
         if (attr != null) {
             def.addAttribute(attr);
         }
+    }
+
+    public StyleableDefinition removeStyleableByName(String name) {
+        return myStyleables.remove(name);
     }
 
     public StyleableDefinition getStyleableByName(String name) {

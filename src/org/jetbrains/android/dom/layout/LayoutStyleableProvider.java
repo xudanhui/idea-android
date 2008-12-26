@@ -18,9 +18,7 @@ import org.jetbrains.android.util.Key;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author coyote
@@ -36,17 +34,18 @@ public class LayoutStyleableProvider extends StyleableProvider {
     }
 
     private void addViewClassToMap(PsiClass viewClass) {
+        // it can't invoke getViewClassMap()
         viewClassMap.put(viewClass.getName(), viewClass);
     }
 
     private synchronized Map<String, PsiClass> getViewClassMap() {
         if (viewClassMap == null) {
-            viewClassMap = new HashMap<String, PsiClass>();
             Project project = facet.getModule().getProject();
             JavaPsiFacade facade = JavaPsiFacade.getInstance(project);
             PsiClass viewClass = facade.findClass("android.view.View", ProjectScope.getAllScope(project));
 
             if (viewClass != null) {
+                viewClassMap = new HashMap<String, PsiClass>();
                 addViewClassToMap(viewClass);
                 ClassInheritorsSearch.search(viewClass).forEach(new Processor<PsiClass>() {
                     public boolean process(PsiClass psiClass) {
@@ -66,8 +65,13 @@ public class LayoutStyleableProvider extends StyleableProvider {
     public StyleableDefinition getStyleableByTagName(String tagName) {
         final AttributeDefinitions attrDefs = getAttributeDefinitions();
         if (attrDefs == null) return null;
+
+        // view tag is special case
+        if (tagName.equals("view")) tagName = "View";
+
         StyleableDefinition definition = attrDefs.getStyleableByName(tagName);
         if (definition != null) return definition;
+        
         // e.g. TimePicker is not listed in attrs.xml
         return getBaseStyleable(attrDefs, tagName);
     }
@@ -81,10 +85,9 @@ public class LayoutStyleableProvider extends StyleableProvider {
     }
 
     private boolean isView(StyleableDefinition definition) {
-        while (definition != null && !definition.getName().equals("View")) {
-            definition = definition.getSuperclass();
-        }
-        return definition != null;
+        if (definition.getName().equals("View")) return true;
+        StyleableDefinition superClass = definition.getSuperclass();
+        return superClass != null && isView(superClass);
     }
 
     private void addChildren(AttributeDefinitions definitions) {
@@ -114,20 +117,35 @@ public class LayoutStyleableProvider extends StyleableProvider {
         return null;
     }
 
+    private void linkLayoutStyleables(AttributeDefinitions definitions) {
+        List<String> names = new ArrayList<String>(definitions.getStyleableNames());
+        for (String name : names) {
+            StyleableDefinition definition = definitions.getStyleableByName(name);
+            if (name.endsWith("_Layout") || name.endsWith("_MarginLayout")) {
+                String s = name.substring(0, name.indexOf('_'));
+                StyleableDefinition layoutOwner = definitions.removeStyleableByName(s);
+                if (layoutOwner != null) {
+                    layoutOwner.addLayoutStyleable(definition);
+                }
+            }
+        }
+    }
 
     @Nullable
-    public AttributeDefinitions getAttributeDefinitions() {
-        AttributeDefinitions attributeDefinitions = super.getAttributeDefinitions();
+    public synchronized AttributeDefinitions getAttributeDefinitions() {
+        AttributeDefinitions definitions = super.getAttributeDefinitions();
         if (!initialized) {
-            linkSuperclasses(attributeDefinitions);
-            addChildren(attributeDefinitions);
+            linkSuperclasses(definitions);
+            addChildren(definitions);
+            linkLayoutStyleables(definitions);
             initialized = true;
         }
-        return attributeDefinitions;
+        return definitions;
     }
 
     @NotNull
     protected String getStyleableNameByTagName(@NotNull String tagName) {
+        if (tagName.equals("view")) return "View";
         return tagName;
     }
 
